@@ -1,0 +1,185 @@
+"use client";
+import Header from "@/app/components/Header";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import UploadButton from "@/app/components/UploadButton";
+
+const CreateAuction = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startingPrice, setStartingPrice] = useState("");
+  const [currentPrice, setCurrentPrice] = useState("");
+  const [startTime, setStartTime] = useState(Date.now());
+  const [endTime, setEndTime] = useState();
+  const [status, setStatus] = useState("upcoming");
+  const [images, setImages] = useState("");
+
+  const getImage = (data) => {
+    setImages(data);
+  };
+
+  if (!session)
+    return (
+      <div className="container text-center mt-5">
+        <p className="alert alert-danger">
+          You have no access to create auction
+        </p>
+        <Link href="/user-auth" className="btn btn-primary">
+          Login
+        </Link>
+      </div>
+    );
+
+  const toDatetimeLocal = (ts) => {
+    const date = new Date(ts);
+    return date.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+  };
+
+  const handleSubmitForm = async () => {
+    let res = await fetch("/api/auction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        description,
+        startingPrice,
+        images,
+        status,
+        currentPrice,
+        startTime,
+        endTime,
+        sellerId: session?.user.id,
+      }),
+    });
+    res = await res.json();
+    router.push("/dashboard");
+  };
+
+  return (
+    <div>
+      <Header />
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <div className="card shadow p-4" style={{ width: "420px" }}>
+          <h4 className="text-center mb-3">Create Auction</h4>
+
+          {/* Title */}
+          <div className="mb-2">
+            <label className="form-label">Title</label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="mb-2">
+            <label className="form-label">Description</label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {/* Image */}
+          <div className="mb-2">
+            {images && (
+              <div className="text-center mb-2">
+                <img
+                  src={images}
+                  alt="Uploaded"
+                  className="img-thumbnail"
+                  style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                />
+              </div>
+            )}
+            <label className="form-label">Image</label>
+            <input
+              type="text"
+              className="form-control form-control-sm mb-1"
+              value={images}
+              onChange={(e) => setImages(e.target.value)}
+            />
+            <UploadButton getImage={getImage} />
+          </div>
+
+          {/* Prices */}
+          <div className="mb-2">
+            <label className="form-label">Start Price</label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={startingPrice}
+              onChange={(e) => setStartingPrice(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="form-label">Current Price</label>
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              value={currentPrice}
+              onChange={(e) => setCurrentPrice(e.target.value)}
+            />
+          </div>
+
+          {/* Times */}
+          <div className="mb-2">
+            <label className="form-label">Start Time</label>
+            <input
+              type="datetime-local"
+              className="form-control form-control-sm"
+              value={toDatetimeLocal(Date.now())}
+              onChange={(e) => setStartTime(e.target.value)}
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="form-label">End Time</label>
+            <input
+              type="datetime-local"
+              className="form-control form-control-sm"
+              value={toDatetimeLocal(Date.now())}
+              onChange={(e) => setEndTime(e.target.value)}
+            />
+          </div>
+
+          {/* Status */}
+          <div className="mb-3">
+            <label className="form-label">Status</label>
+            <select
+              className="form-select form-select-sm"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <option value="upcoming">Up-Coming</option>
+              <option value="active">Active</option>
+              <option value="ended">Ended</option>
+            </select>
+          </div>
+
+          {/* Submit */}
+          <div className="text-center">
+            <button
+              onClick={handleSubmitForm}
+              className="btn btn-success btn-sm w-100"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateAuction;

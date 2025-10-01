@@ -1,0 +1,14 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flexBetween {
+  display: flex;
+  justify-content: space-between;
+}
+.li {
+  list-style: none;
+  margin: 0 10px;
+  cursor: pointer;
+}
