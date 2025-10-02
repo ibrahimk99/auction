@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
+import { set } from "mongoose";
 
 const CreateAuction = () => {
   const { data: session } = useSession();
@@ -15,12 +16,24 @@ const CreateAuction = () => {
   const [startingPrice, setStartingPrice] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [startTime, setStartTime] = useState(Date.now());
-  const [endTime, setEndTime] = useState();
+  const [endTime, setEndTime] = useState(Date.now());
   const [status, setStatus] = useState("upcoming");
   const [images, setImages] = useState("");
+  const [cloudImg, setCloudImg] = useState("");
 
   const getImage = (data) => {
-    setImages(data);
+    setImages(data.info.secure_url);
+    setCloudImg(data.info.public_id);
+  };
+  const delImg = async (id) => {
+    let res = await fetch("/api/cloudinary/" + id, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+    });
+    res = await res.json();
+    if (res.success) {
+      setImages("");
+    }
   };
 
   if (!session)
@@ -37,7 +50,7 @@ const CreateAuction = () => {
 
   const toDatetimeLocal = (ts) => {
     const date = new Date(ts);
-    return date.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+    return date.toISOString().slice(0, 16);
   };
 
   const handleSubmitForm = async () => {
@@ -53,6 +66,7 @@ const CreateAuction = () => {
         currentPrice,
         startTime,
         endTime,
+        cloudImg,
         sellerId: session?.user.id,
       }),
     });
@@ -92,7 +106,14 @@ const CreateAuction = () => {
           {/* Image */}
           <div className="mb-2">
             {images && (
-              <div className="text-center mb-2">
+              <div className=" mb-2">
+                <span
+                  onClick={() => delImg(cloudImg)}
+                  className="position-absolute badge round-pill bg-danger"
+                  style={{ cursor: "pointer" }}
+                >
+                  X
+                </span>
                 <img
                   src={images}
                   alt="Uploaded"
@@ -101,7 +122,9 @@ const CreateAuction = () => {
                 />
               </div>
             )}
+
             <label className="form-label">Image</label>
+
             <input
               type="text"
               className="form-control form-control-sm mb-1"

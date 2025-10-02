@@ -63,7 +63,7 @@ export const authOptions = {
       await connectDB();
       if (token?.id) {
         await ActiveSession.deleteOne({ userId: token.id });
-        console.log(`Active session removed for user: ${token.id}`);
+        // console.log(`Active session removed for user: ${token.id}`);
       }
     },
   },

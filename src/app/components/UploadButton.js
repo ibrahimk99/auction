@@ -6,7 +6,7 @@ export default function UploadButton({ getImage }) {
       className="btn btn-sm btn-primary"
       uploadPreset="next_uploads" // 👈 your preset name
       onSuccess={(result) => {
-        getImage(result.info.secure_url);
+        getImage(result);
       }}
     >
       Upload Image

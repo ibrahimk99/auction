@@ -8,6 +8,7 @@ const auctionSchema = new Schema({
   currentPrice: Number,
   startTime: String,
   endTime: String,
+  cloudImg: String,
   status: {
     type: String,
     enum: ["upcoming", "active", "ended"],

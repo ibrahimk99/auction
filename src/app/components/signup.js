@@ -28,7 +28,7 @@ const UserSignup = () => {
       if (!result?.error) {
         router.push("/user-auth"); // redirect where you want
       } else {
-        console.log(result.error);
+        router.push("/home"); // redirect where you want
       }
     }
   };

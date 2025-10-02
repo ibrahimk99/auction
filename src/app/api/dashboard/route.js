@@ -12,10 +12,8 @@ export async function GET() {
       { status: 401 }
     );
   }
-  console.log(session);
 
   await connectDB();
   const data = await auctionModel.find({ sellerId: session.user.id });
-  console.log(data);
   return NextResponse.json({ success: true, data });
 }

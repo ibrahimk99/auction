@@ -12,7 +12,7 @@ const Header = () => {
   const handleSignOut = () => {
     signOut();
     console.log("User SignOut Successfully");
-    router.push("/");
+    router.push("/home");
   };
 
   return (

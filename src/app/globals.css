@@ -18,3 +18,28 @@ body {
 .page-body {
   margin-top: 70px;
 }
+.del-btn {
+  position: absolute;
+  left: 80%;
+  top: 3%;
+  cursor: pointer;
+  opacity: 0.8;
+  z-index: 1;
+}
+@media (max-width: 768px) {
+  .del-btn {
+    left: 70%;
+  }
+}
+
+@media (max-width: 480px) {
+  .del-btn {
+    left: 60%;
+  }
+}
+
+.del-btn:hover {
+  opacity: 1;
+  scale: 1.1;
+  transition: all 0.3s ease-in-out;
+}

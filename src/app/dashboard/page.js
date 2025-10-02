@@ -2,7 +2,7 @@
 import Header from "@/app/components/Header";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-
+import Link from "next/link";
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
@@ -16,9 +16,21 @@ export default function Dashboard() {
     res = await res.json();
     setAuctions(res.data);
   };
+  const delAuction = async (id) => {
+    let res = await fetch("/api/auction/" + id, {
+      method: "DELETE",
+    });
+    res = await res.json();
+    console.log(res);
+    fetchAuctions();
+  };
 
   if (!session)
-    return <p className="text-center mt-5">⚠️ Please login first</p>;
+    return (
+      <p className="text-center mt-5">
+        ⚠️ Please login first <Link href="/user-auth">Log in Here</Link>
+      </p>
+    );
 
   return (
     <div>
@@ -34,12 +46,19 @@ export default function Dashboard() {
             {auctions.map((auction, idx) => (
               <div className="col-md-4 col-sm-6" key={idx + 1}>
                 <div className="card shadow-sm h-100">
+                  <span
+                    onClick={() => delAuction(auction._id)}
+                    className="del-btn float-end badge round-pill bg-danger"
+                  >
+                    Delete
+                  </span>
                   <img
                     src={auction.images}
                     className="card-img-top"
                     alt={auction.title}
                     style={{ height: "200px", objectFit: "cover" }}
                   />
+
                   <div className="card-body">
                     <h5 className="card-title">{auction.title}</h5>
                     <p className="card-text text-muted">

@@ -51,10 +51,12 @@ export default function Home() {
                       💰 {auction.currentPrice} PKR
                     </p>
                     <p className="text-secondary small mb-1">
-                      ⏰ Start: {new Date(auction.startTime).toLocaleString()}
+                      ⏰ Start:{" "}
+                      {new Date(Number(auction.startTime)).toLocaleString()}
                     </p>
                     <p className="text-secondary small">
-                      ⏳ End: {new Date(auction.endTime).toLocaleString()}
+                      ⏳ End:{" "}
+                      {new Date(Number(auction.endTime)).toLocaleString()}
                     </p>
                     <span
                       className={`badge mt-2 ${
