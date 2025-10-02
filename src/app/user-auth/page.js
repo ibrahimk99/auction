@@ -1,19 +1,19 @@
 "use client";
+import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
 import UserLogin from "@/app/components/login";
 import UserSignup from "@/app/components/signup";
-import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-const userAuth = () => {
+const UserAuth = () => {
+  const { status } = useSession();
   const [login, setLogin] = useState(true);
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/");
+      router.replace("/home");
     }
   }, [status, router]);
 
@@ -44,4 +44,4 @@ const userAuth = () => {
     </div>
   );
 };
-export default userAuth;
+export default UserAuth;

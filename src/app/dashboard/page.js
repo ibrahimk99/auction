@@ -3,6 +3,7 @@ import Header from "@/app/components/Header";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
@@ -52,11 +53,14 @@ export default function Dashboard() {
                   >
                     Delete
                   </span>
-                  <img
+
+                  <Image
                     src={auction.images}
                     className="card-img-top"
                     alt={auction.title}
-                    style={{ height: "200px", objectFit: "cover" }}
+                    width={200}
+                    height={200}
+                    objectFit="cover"
                   />
 
                   <div className="card-body">

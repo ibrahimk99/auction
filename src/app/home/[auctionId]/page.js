@@ -3,19 +3,20 @@ import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-const getAuction = () => {
+const GetAuction = () => {
   const [aucDetail, setAucDetail] = useState();
   console.log(aucDetail);
   const params = useParams();
-  const id = params.auctionId;
+  const { auctionId } = params;
+
   useEffect(() => {
-    fetchAuction();
-  }, []);
-  const fetchAuction = async () => {
-    let res = await fetch(`/api/auction/${id}`);
-    res = await res.json();
-    setAucDetail(res.data);
-  };
+    async function fetchAuction() {
+      let res = await fetch(`/api/auction/${auctionId}`);
+      res = await res.json();
+      setAucDetail(res.data);
+    }
+    if (auctionId) fetchAuction();
+  }, [auctionId]);
 
   if (!aucDetail) {
     return <h1 className="text-center mt-5">Loading...</h1>;
@@ -36,16 +37,7 @@ const getAuction = () => {
       <Header />
       <div className="container mt-5">
         <div className="row">
-          {/* Left side - Image */}
           <div className="col-md-6 text-center">
-            {/* <img
-              src={images}
-              height={500}
-              width={400}
-              className="img-fluid rounded shadow"
-              alt={title}
-            /> */}
-
             <CldImage
               width="500"
               height="400"
@@ -105,4 +97,4 @@ const getAuction = () => {
   );
 };
 
-export default getAuction;
+export default GetAuction;

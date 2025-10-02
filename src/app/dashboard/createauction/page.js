@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Header from "@/app/components/Header";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
@@ -114,11 +115,14 @@ const CreateAuction = () => {
                 >
                   X
                 </span>
-                <img
+
+                <Image
                   src={images}
                   alt="Uploaded"
                   className="img-thumbnail"
-                  style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                  width={80}
+                  height={80}
+                  objectFit="cover"
                 />
               </div>
             )}

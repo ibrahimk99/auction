@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { useEffect, useState } from "react";
-
+import Image from "next/image";
 export default function Home() {
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
@@ -33,12 +33,15 @@ export default function Home() {
                 className="col-lg-3 col-md-4 col-sm-6 col-12 mb-4"
               >
                 <div className="card h-100 shadow-sm">
-                  <img
+                  <Image
                     src={auction.images}
                     className="card-img-top"
                     alt={auction.title}
-                    style={{ height: "200px", objectFit: "cover" }}
+                    width={100}
+                    height={200}
+                    objectFit="cover"
                   />
+
                   <div className="card-body d-flex flex-column">
                     <h5 className="card-title">{auction.title}</h5>
                     <p className="card-text text-muted">
