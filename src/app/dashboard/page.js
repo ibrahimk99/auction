@@ -4,10 +4,12 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
-
+  const router = useRouter();
   useEffect(() => {
     fetchAuctions();
   }, []);
@@ -16,14 +18,6 @@ export default function Dashboard() {
     let res = await fetch("/api/dashboard");
     res = await res.json();
     setAuctions(res.data);
-  };
-  const delAuction = async (id) => {
-    let res = await fetch("/api/auction/" + id, {
-      method: "DELETE",
-    });
-    res = await res.json();
-    console.log(res);
-    fetchAuctions();
   };
 
   if (!session)
@@ -36,24 +30,23 @@ export default function Dashboard() {
   return (
     <div>
       <Header />
-      <div className="container my-4">
+      <div className="container mt-4">
         <h2 className="mb-4">
           Welcome <span className="text-primary">{session.user.name}</span>,
           Role: <span className="badge bg-info">{session.user.role}</span>
         </h2>
 
         {auctions.length > 0 ? (
-          <div className="row g-4">
+          <div className="row">
             {auctions.map((auction, idx) => (
-              <div className="col-md-4 col-sm-6" key={idx + 1}>
-                <div className="card shadow-sm h-100">
-                  <span
-                    onClick={() => delAuction(auction._id)}
-                    className="del-btn float-end badge round-pill bg-danger"
-                  >
-                    Delete
-                  </span>
-
+              <div
+                className="col-lg-3 col-md-6 col-sm-8 col-12 mb-4"
+                key={idx + 1}
+              >
+                <div
+                  className="card shadow-sm h-100"
+                  onClick={() => router.push("/dashboard/" + auction._id)}
+                >
                   <Image
                     src={auction.images}
                     className="card-img-top"

@@ -1,26 +1,56 @@
 "use client";
 import Image from "next/image";
 import Header from "@/app/components/Header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
-import { set } from "mongoose";
 
-const CreateAuction = () => {
-  const { data: session } = useSession();
-  const router = useRouter();
-
+const EditAuction = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
-  const [startTime, setStartTime] = useState(Date.now());
-  const [endTime, setEndTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [status, setStatus] = useState("upcoming");
   const [images, setImages] = useState("");
   const [cloudImg, setCloudImg] = useState("");
+
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { aucId } = useParams();
+
+  useEffect(() => {
+    async function fetchAuction() {
+      const res = await fetch(`/api/auction/${aucId}`);
+      const result = await res.json();
+      const {
+        title,
+        description,
+        startingPrice,
+        currentPrice,
+        startTime,
+        endTime,
+        status,
+        images,
+        cloudImg,
+      } = result.data[0];
+      if (result.success) {
+        setTitle(title);
+        setDescription(description);
+        setStartingPrice(startingPrice);
+        setCurrentPrice(currentPrice);
+        setStartTime(startTime);
+        setEndTime(endTime);
+        setStatus(status);
+        setImages(images);
+        setCloudImg(cloudImg);
+      }
+    }
+    fetchAuction();
+  }, [aucId]);
 
   const getImage = (data) => {
     setImages(data.info.secure_url);
@@ -49,14 +79,9 @@ const CreateAuction = () => {
       </div>
     );
 
-  const toDatetimeLocal = (ts) => {
-    const date = new Date(ts);
-    return date.toISOString().slice(0, 16);
-  };
-
   const handleSubmitForm = async () => {
-    let res = await fetch("/api/auction", {
-      method: "POST",
+    let res = await fetch("/api/auction/" + aucId, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         title,
@@ -68,11 +93,13 @@ const CreateAuction = () => {
         startTime,
         endTime,
         cloudImg,
-        sellerId: session?.user.id,
       }),
     });
     res = await res.json();
-    router.push("/dashboard");
+    if (res.success) {
+      router.push("/dashboard");
+      alert("Auction updated successfully");
+    }
   };
 
   return (
@@ -80,7 +107,7 @@ const CreateAuction = () => {
       <Header />
       <div className="d-flex justify-content-center align-items-center min-vh-100">
         <div className="card shadow p-4" style={{ width: "420px" }}>
-          <h4 className="text-center mb-3">Create Auction</h4>
+          <h4 className="text-center mb-3">Edit Auction</h4>
 
           <div className="mb-2">
             <label className="form-label">Title</label>
@@ -202,4 +229,4 @@ const CreateAuction = () => {
   );
 };
 
-export default CreateAuction;
+export default EditAuction;

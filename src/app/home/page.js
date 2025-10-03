@@ -13,24 +13,20 @@ export default function Home() {
   const fetchAuctions = async () => {
     let res = await fetch("/api/auction");
     res = await res.json();
-    console.log(res.data);
     setAuctions(res.data);
-  };
-  const getAuction = (id) => {
-    router.push("/home/" + id);
   };
 
   return (
     <div>
       <Header />
       {auctions && auctions.length > 0 ? (
-        <div className="container mt-4">
+        <div className="container mt-3">
           <div className="row">
             {auctions.map((auction, idx) => (
               <div
-                onClick={() => getAuction(auction._id)}
+                onClick={() => router.push("/home/" + auction._id)}
                 key={idx}
-                className="col-lg-3 col-md-4 col-sm-6 col-12 mb-4"
+                className="col-lg-3 col-md-6 col-sm-8 col-12 mb-4"
               >
                 <div className="card h-100 shadow-sm">
                   <Image
@@ -55,11 +51,11 @@ export default function Home() {
                     </p>
                     <p className="text-secondary small mb-1">
                       ⏰ Start:{" "}
-                      {new Date(Number(auction.startTime)).toLocaleString()}
+                      {new Date(auction.startTime).toLocaleString("en-PK")}
                     </p>
                     <p className="text-secondary small">
                       ⏳ End:{" "}
-                      {new Date(Number(auction.endTime)).toLocaleString()}
+                      {new Date(auction.endTime).toLocaleString("en-PK")}
                     </p>
                     <span
                       className={`badge mt-2 ${

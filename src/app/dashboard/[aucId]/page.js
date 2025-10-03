@@ -1,21 +1,34 @@
 "use client";
 import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-const GetAuction = () => {
+
+const DashboardAuction = () => {
   const [aucDetail, setAucDetail] = useState("");
+  const router = useRouter();
+
   const params = useParams();
-  const { auctionId } = params;
+  const { aucId } = params;
 
   useEffect(() => {
-    async function fetchAuction() {
-      let res = await fetch(`/api/auction/${auctionId}`);
+    async function fetchAuctions() {
+      let res = await fetch(`/api/auction/${aucId}`);
       res = await res.json();
       setAucDetail(res.data);
     }
-    if (auctionId) fetchAuction();
-  }, [auctionId]);
+    if (aucId) fetchAuctions();
+  }, [aucId]);
+
+  const delAuction = async (id) => {
+    let res = await fetch("/api/auction/" + id, {
+      method: "DELETE",
+    });
+    res = await res.json();
+    if (res.success) {
+      router.push("/dashboard");
+    }
+  };
 
   if (!aucDetail) {
     return <h1 className="text-center mt-5">Loading...</h1>;
@@ -89,9 +102,17 @@ const GetAuction = () => {
 
             {/* Action Buttons */}
             <div className="mt-4">
-              <button className="btn btn-success me-2">Place a Bid</button>
-              <button className="btn btn-outline-secondary">
-                Add to Watchlist
+              <button
+                className="btn btn-info me-2"
+                onClick={() => router.push(`/dashboard/${aucId}/edit`)}
+              >
+                Edit Auction
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={() => delAuction(aucId)}
+              >
+                Delete Auction
               </button>
             </div>
           </div>
@@ -101,4 +122,4 @@ const GetAuction = () => {
   );
 };
 
-export default GetAuction;
+export default DashboardAuction;

@@ -19,3 +19,35 @@ export async function DELETE(req, { params }) {
   await auctionModel.deleteOne({ _id: id });
   return NextResponse.json({ success: true });
 }
+
+export async function PUT(req, { params }) {
+  const { id } = await params;
+
+  const {
+    title,
+    description,
+    startingPrice,
+    currentPrice,
+    startTime,
+    endTime,
+    status,
+    images,
+    cloudImg,
+  } = await req.json();
+  await connectDB();
+  const data = await auctionModel.updateOne(
+    { _id: id },
+    {
+      title,
+      description,
+      startingPrice,
+      currentPrice,
+      startTime,
+      endTime,
+      status,
+      images,
+      cloudImg,
+    }
+  );
+  return NextResponse.json({ success: true, data });
+}

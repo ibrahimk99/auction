@@ -6,8 +6,8 @@ const auctionSchema = new Schema({
   images: String,
   startingPrice: Number,
   currentPrice: Number,
-  startTime: String,
-  endTime: String,
+  startTime: { type: Date, required: true },
+  endTime: { type: Date, required: true },
   cloudImg: String,
   status: {
     type: String,

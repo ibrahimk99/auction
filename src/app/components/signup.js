@@ -12,7 +12,6 @@ const UserSignup = () => {
   const router = useRouter();
   const handleSignup = async (e) => {
     e.preventDefault();
-    console.log(name, email, password, role);
     let res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -26,59 +25,93 @@ const UserSignup = () => {
       });
 
       if (!result?.error) {
-        router.push("/user-auth"); // redirect where you want
+        router.push("/user-auth");
       } else {
-        router.push("/home"); // redirect where you want
+        router.push("/home");
       }
     }
   };
 
   return (
-    <div>
-      <div className="page-body">
-        <form className={styles.loginForm} onSubmit={handleSignup}>
-          <div className={styles.userInput}>
-            <label htmlFor="name">Name : </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card shadow-lg">
+            <div className="card-body p-4">
+              <h3 className="card-title text-center mb-4">Signup</h3>
+              <form onSubmit={handleSignup}>
+                {/* Name */}
+                <div className="mb-3">
+                  <label htmlFor="name" className="form-label">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    className="form-control"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+
+                {/* Role */}
+                <div className="mb-3">
+                  <label htmlFor="role" className="form-label">
+                    Role
+                  </label>
+                  <select
+                    id="role"
+                    className="form-select"
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="buyer">Buyer</option>
+                    <option value="seller">Seller</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                {/* Submit Button */}
+                <div className="d-grid">
+                  <button type="submit" className="btn btn-primary">
+                    Submit
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div className={styles.userInput}>
-            <label htmlFor="email">Email : </label>
-            <input
-              type="text"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className={styles.userInput}>
-            <label htmlFor="password">Password : </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <div className={styles.userInput}>
-            <label htmlFor="role">Role : </label>
-            <select
-              name="role"
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="buyer">Buyer</option>
-              <option value="seller">Seller</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <button type="submit">Submit</button>
-        </form>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Providers } from "./provider";
+import Script from "next/script";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,6 +25,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <Providers>{children}</Providers>
+        <Script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
