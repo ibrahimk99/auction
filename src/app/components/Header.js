@@ -75,6 +75,11 @@ const Header = () => {
               <>
                 <li className="nav-item">
                   <Link className="nav-link" href="/user-auth">
+                    Login
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" href="/user-auth">
                     Sign Up
                   </Link>
                 </li>

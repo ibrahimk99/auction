@@ -22,32 +22,12 @@ export async function DELETE(req, { params }) {
 
 export async function PUT(req, { params }) {
   const { id } = await params;
+  const data = await req.json();
 
-  const {
-    title,
-    description,
-    startingPrice,
-    currentPrice,
-    startTime,
-    endTime,
-    status,
-    images,
-    cloudImg,
-  } = await req.json();
   await connectDB();
-  const data = await auctionModel.updateOne(
-    { _id: id },
-    {
-      title,
-      description,
-      startingPrice,
-      currentPrice,
-      startTime,
-      endTime,
-      status,
-      images,
-      cloudImg,
-    }
-  );
+  await auctionModel.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  });
   return NextResponse.json({ success: true, data });
 }

@@ -1,10 +1,16 @@
 "use client";
 import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import ListofBidder from "@/app/components/ListofBidder";
+
 const GetAuction = () => {
-  const [aucDetail, setAucDetail] = useState("");
+  const [aucDetail, setAucDetail] = useState([]);
+  const [bidPrice, setBidPrice] = useState(0);
+  const { data: session } = useSession();
+  const router = useRouter();
   const params = useParams();
   const { auctionId } = params;
 
@@ -17,9 +23,10 @@ const GetAuction = () => {
     if (auctionId) fetchAuction();
   }, [auctionId]);
 
-  if (!aucDetail) {
+  if (!aucDetail || aucDetail.length === 0) {
     return <h1 className="text-center mt-5">Loading...</h1>;
   }
+
   let {
     title,
     description,
@@ -29,70 +36,111 @@ const GetAuction = () => {
     startTime,
     endTime,
     status,
-  } = aucDetail[0];
+  } = aucDetail?.[0];
 
-  new Date(endTime.toLocaleString("en-PK"));
+  const increaseBid = async () => {
+    if (!session?.user?.id) {
+      router.push("/user-auth");
+      return;
+    } else {
+      currentPrice = Number(currentPrice) + Number(bidPrice);
+      let res = await fetch(`/api/biding`, {
+        method: "POST",
+        body: JSON.stringify({
+          auctionId,
+          bidderId: session?.user?.id,
+          amount: currentPrice,
+        }),
+      });
+      res = await res.json();
+      console.log(res.data);
+      setBidPrice("");
+    }
+  };
 
   return (
     <div>
       <Header />
       <div className="container mt-5">
-        <div className="row">
-          <div className="col-md-6 text-center">
-            <CldImage
-              width="500"
-              height="400"
-              src={images} // must be Cloudinary public_id
-              alt={title}
-              // gravity="auto"
-              className="img-fluid rounded-shadow"
-            />
-          </div>
+        <h2 className="text-center text-md-start mb-4">{title}</h2>
 
-          {/* Right side - Details */}
-          <div className="col-md-6">
-            <h2 className="mb-3">{title}</h2>
-            <p className="text-muted">{description}</p>
-
-            {/* Summary */}
-            <div className="card shadow-sm mt-4">
+        <div className="row g-4">
+          {/* Image & Summary */}
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm border-0">
+              <CldImage
+                width="800"
+                height="600"
+                src={images}
+                alt={title}
+                className="img-fluid rounded-top"
+              />
               <div className="card-body">
-                <h5 className="card-title">Auction Summary</h5>
-                <ul className="list-group list-group-flush">
-                  <li className="list-group-item">
-                    <strong>Starting Price:</strong> {startingPrice} PKR
-                  </li>
-                  <li className="list-group-item">
-                    <strong>Current Price:</strong> {currentPrice} PKR
-                  </li>
+                <p className="text-muted">{description}</p>
 
-                  <li className="list-group-item">
-                    <strong>Auction Start:</strong>{" "}
-                    {startTime
-                      ? new Date(startTime).toLocaleString("en-PK")
-                      : "Not Provided"}
-                  </li>
+                <div className="mt-3">
+                  <h5 className="fw-bold mb-3">Auction Summary</h5>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item">
+                      <strong>Starting Price:</strong> {startingPrice} PKR
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Current Price:</strong>{" "}
+                      <span className="text-success">{currentPrice} PKR</span>
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Start Time:</strong>{" "}
+                      {startTime
+                        ? new Date(startTime).toLocaleString("en-PK")
+                        : "N/A"}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>End Time:</strong>{" "}
+                      {endTime
+                        ? new Date(endTime).toLocaleString("en-PK")
+                        : "N/A"}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Status:</strong>{" "}
+                      <span className="badge bg-info text-dark">{status}</span>
+                    </li>
+                  </ul>
+                </div>
 
-                  <li className="list-group-item">
-                    <strong>Auction End:</strong>{" "}
-                    {endTime
-                      ? new Date(endTime).toLocaleString("en-PK")
-                      : "Not Provided"}
-                  </li>
-                  <li className="list-group-item">
-                    <strong>Status:</strong>{" "}
-                    <span className="badge bg-info text-dark">{status}</span>
-                  </li>
-                </ul>
+                <div className="mt-4">
+                  <input
+                    type="number"
+                    className="form-control mb-3"
+                    value={bidPrice}
+                    onChange={(e) => setBidPrice(e.target.value)}
+                    placeholder="Enter your bid amount"
+                  />
+                  <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                    <button
+                      type="submit"
+                      className="btn btn-success w-100 w-sm-auto"
+                      onClick={increaseBid}
+                    >
+                      Place a Bid
+                    </button>
+                    <button className="btn btn-outline-secondary w-100 w-sm-auto">
+                      Add to Watchlist
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="mt-4">
-              <button className="btn btn-success me-2">Place a Bid</button>
-              <button className="btn btn-outline-secondary">
-                Add to Watchlist
-              </button>
+          {/* Bidder List */}
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm  h-100">
+              <div className="card-body">
+                {/* <h5 className="fw-bold mb-3 text-center text-lg-start">
+                  Bidders
+                </h5> */}
+                <ListofBidder />
+              </div>
             </div>
           </div>
         </div>
