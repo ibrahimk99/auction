@@ -5,25 +5,27 @@ import { FaUserCircle } from "react-icons/fa";
 
 export default function ListofBidder() {
   const [bids, setBids] = useState([]);
-  const [loading, setLoading] = useState(true); // 👈 added loading state
+  const [loading, setLoading] = useState(true);
   const params = useParams();
   const { auctionId } = params;
 
   useEffect(() => {
-    async function fetchBids() {
-      try {
-        const res = await fetch("/api/biding/" + auctionId);
-        const data = await res.json();
-        console.log(data);
-        setBids(data.data || []);
-      } catch (error) {
-        console.error("Error fetching bids:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchBids();
-  }, []);
+  }, [auctionId]);
+  const fetchBids = async () => {
+    try {
+      await fetch("/api/biding/" + auctionId).then((res) => {
+        res.json().then((data) => {
+          console.log(data);
+          setBids(data.data || []);
+        });
+      });
+    } catch (error) {
+      console.error("Error fetching bids:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (

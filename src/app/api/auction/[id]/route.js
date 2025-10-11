@@ -31,3 +31,14 @@ export async function PUT(req, { params }) {
   });
   return NextResponse.json({ success: true, data });
 }
+export async function PATCH(req, { params }) {
+  const { id } = await params;
+  const data = await req.json();
+
+  await connectDB();
+  await auctionModel.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  });
+  return NextResponse.json({ success: true, data });
+}

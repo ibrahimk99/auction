@@ -21,7 +21,7 @@ const GetAuction = () => {
       setAucDetail(res.data);
     }
     if (auctionId) fetchAuction();
-  }, [auctionId]);
+  }, []);
 
   if (!aucDetail || aucDetail.length === 0) {
     return <h1 className="text-center mt-5">Loading...</h1>;
@@ -43,15 +43,21 @@ const GetAuction = () => {
       router.push("/user-auth");
       return;
     } else {
-      currentPrice = Number(currentPrice) + Number(bidPrice);
       let res = await fetch(`/api/biding`, {
         method: "POST",
         body: JSON.stringify({
           auctionId,
           bidderId: session?.user?.id,
-          amount: currentPrice,
+          amount: bidPrice,
         }),
       });
+      currentPrice = Number(currentPrice) + Number(bidPrice);
+      let data = await fetch("/api/auction/" + auctionId, {
+        method: "PATCH",
+        body: JSON.stringify({ currentPrice }),
+      });
+      data = await data.json();
+      console.log(data);
       res = await res.json();
       console.log(res.data);
       setBidPrice("");

@@ -43,3 +43,7 @@ body {
   scale: 1.1;
   transition: all 0.3s ease-in-out;
 }
+#icon {
+  border-right: 2px solid white;
+  padding-right: 11px;
+}
