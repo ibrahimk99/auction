@@ -6,11 +6,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
-import { set } from "mongoose";
+import { auctionAction } from "@/app/store/auctionSlice";
+import { useDispatch } from "react-redux";
 
 const CreateAuction = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -49,11 +51,6 @@ const CreateAuction = () => {
       </div>
     );
 
-  const toDatetimeLocal = (ts) => {
-    const date = new Date(ts);
-    return date.toISOString().slice(0, 16);
-  };
-
   const handleSubmitForm = async () => {
     let res = await fetch("/api/auction", {
       method: "POST",
@@ -72,6 +69,7 @@ const CreateAuction = () => {
       }),
     });
     res = await res.json();
+    dispatch(auctionAction.addAuction(res.data));
     router.push("/dashboard");
   };
 

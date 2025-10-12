@@ -19,6 +19,6 @@ export async function POST(req) {
   }
   const payload = await req.json();
   await connectDB();
-  await auctionModel.create(payload);
-  return NextResponse.json({ succes: true });
+  const data = await auctionModel.create(payload);
+  return NextResponse.json({ succes: true, data });
 }

@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 
-export default function ListofBidder() {
+export default function ListofBidder({ bidPrice }) {
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
   const params = useParams();
@@ -11,15 +11,13 @@ export default function ListofBidder() {
 
   useEffect(() => {
     fetchBids();
-  }, [auctionId]);
+  }, [bidPrice]);
+
   const fetchBids = async () => {
     try {
-      await fetch("/api/biding/" + auctionId).then((res) => {
-        res.json().then((data) => {
-          console.log(data);
-          setBids(data.data || []);
-        });
-      });
+      let res = await fetch("/api/biding/" + auctionId);
+      res = await res.json();
+      setBids(res.data || []);
     } catch (error) {
       console.error("Error fetching bids:", error);
     } finally {

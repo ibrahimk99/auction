@@ -7,27 +7,32 @@ import { useSession } from "next-auth/react";
 import ListofBidder from "@/app/components/ListofBidder";
 
 const GetAuction = () => {
-  const [aucDetail, setAucDetail] = useState([]);
-  const [bidPrice, setBidPrice] = useState(0);
+  const [aucDetail, setAucDetail] = useState(null);
+  const [bidPrice, setBidPrice] = useState("");
   const { data: session } = useSession();
   const router = useRouter();
-  const params = useParams();
-  const { auctionId } = params;
+  const { auctionId } = useParams();
 
   useEffect(() => {
-    async function fetchAuction() {
-      let res = await fetch(`/api/auction/${auctionId}`);
-      res = await res.json();
-      setAucDetail(res.data);
+    const fetchAuction = async () => {
+      try {
+        const res = await fetch(`/api/auction/${auctionId}`);
+        const data = await res.json();
+        setAucDetail(data.data[0]);
+      } catch (error) {
+        console.error("Failed to fetch auction:", error);
+      }
+    };
+    if (auctionId) {
+      fetchAuction();
     }
-    if (auctionId) fetchAuction();
-  }, []);
+  }, [auctionId]);
 
-  if (!aucDetail || aucDetail.length === 0) {
+  if (!aucDetail) {
     return <h1 className="text-center mt-5">Loading...</h1>;
   }
 
-  let {
+  const {
     title,
     description,
     images,
@@ -36,31 +41,43 @@ const GetAuction = () => {
     startTime,
     endTime,
     status,
-  } = aucDetail?.[0];
-
+  } = aucDetail;
   const increaseBid = async () => {
     if (!session?.user?.id) {
       router.push("/user-auth");
       return;
-    } else {
-      let res = await fetch(`/api/biding`, {
+    }
+    if (!bidPrice || isNaN(bidPrice) || Number(bidPrice) <= 0) {
+      alert("Please enter a valid bid amount.");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/biding`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           auctionId,
-          bidderId: session?.user?.id,
-          amount: bidPrice,
+          bidderId: session.user.id,
+          amount: Number(bidPrice),
         }),
       });
-      currentPrice = Number(currentPrice) + Number(bidPrice);
-      let data = await fetch("/api/auction/" + auctionId, {
+      await res.json();
+
+      const updatedPrice = Number(currentPrice) + Number(bidPrice);
+      const updateRes = await fetch(`/api/auction/${auctionId}`, {
         method: "PATCH",
-        body: JSON.stringify({ currentPrice }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPrice: updatedPrice }),
       });
-      data = await data.json();
-      console.log(data);
-      res = await res.json();
-      console.log(res.data);
+      await updateRes.json();
+
+      setAucDetail((prev) => ({
+        ...prev,
+        currentPrice: updatedPrice,
+      }));
       setBidPrice("");
+    } catch (error) {
+      console.error("Failed to increase bid:", error);
     }
   };
 
@@ -69,9 +86,7 @@ const GetAuction = () => {
       <Header />
       <div className="container mt-5">
         <h2 className="text-center text-md-start mb-4">{title}</h2>
-
         <div className="row g-4">
-          {/* Image & Summary */}
           <div className="col-12 col-lg-6">
             <div className="card shadow-sm border-0">
               <CldImage
@@ -137,15 +152,10 @@ const GetAuction = () => {
               </div>
             </div>
           </div>
-
-          {/* Bidder List */}
           <div className="col-12 col-lg-6">
             <div className="card shadow-sm  h-100">
               <div className="card-body">
-                {/* <h5 className="fw-bold mb-3 text-center text-lg-start">
-                  Bidders
-                </h5> */}
-                <ListofBidder />
+                <ListofBidder bidPrice={bidPrice} />
               </div>
             </div>
           </div>
