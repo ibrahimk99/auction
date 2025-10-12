@@ -6,13 +6,10 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
-import { auctionAction } from "@/app/store/auctionSlice";
-import { useDispatch } from "react-redux";
 
 const CreateAuction = () => {
   const { data: session } = useSession();
   const router = useRouter();
-  const dispatch = useDispatch();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -69,7 +66,6 @@ const CreateAuction = () => {
       }),
     });
     res = await res.json();
-    dispatch(auctionAction.addAuction(res.data));
     router.push("/dashboard");
   };
 
