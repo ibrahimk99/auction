@@ -2,17 +2,14 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
-
 export default function ListofBidder({ bidPrice }) {
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const { auctionId } = params;
-
   useEffect(() => {
     fetchBids();
   }, [bidPrice]);
-
   const fetchBids = async () => {
     try {
       let res = await fetch("/api/biding/" + auctionId);
@@ -47,32 +44,30 @@ export default function ListofBidder({ bidPrice }) {
   return (
     <div className="container ">
       <div className="list-group overflow-auto">
-        {bids
-          .filter((bid) => auctionId == bid.auctionId._id)
-          .map((bid) => (
-            <div
-              key={bid._id}
-              className="list-group-item list-group-item-action shadow-sm mb-3 rounded"
-            >
-              <div className="col-md-8">
-                <h3 className="mb-0">
-                  {" "}
-                  <FaUserCircle />
-                  {bid.bidderId?.name || "Unknown User"}
-                </h3>
-                <p className="mb-1">
-                  <strong>Bid Amount:</strong>{" "}
-                  <span className="text-success">{bid.amount} PKR</span>
-                </p>
-                <p className="text-muted mb-0">
-                  <small>
-                    Bid placed on:{" "}
-                    {new Date(bid.createdAt).toLocaleString("en-PK")}
-                  </small>
-                </p>
-              </div>
+        {bids.map((bid) => (
+          <div
+            key={bid._id}
+            className="list-group-item list-group-item-action shadow-sm mb-3 rounded"
+          >
+            <div className="col-md-8">
+              <h3 className="mb-0">
+                {" "}
+                <FaUserCircle />
+                {bid.bidderId?.name || "Unknown User"}
+              </h3>
+              <p className="mb-1">
+                <strong>Bid Amount:</strong>{" "}
+                <span className="text-success">{bid.amount} PKR</span>
+              </p>
+              <p className="text-muted mb-0">
+                <small>
+                  Bid placed on:{" "}
+                  {new Date(bid.createdAt).toLocaleString("en-PK")}
+                </small>
+              </p>
             </div>
-          ))}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import User from "@/app/models/User";
 import connectDB from "@/app/lib/connectDB";
-import ActiveSession from "@/app/models/ActiveSession";
 
 export async function POST(req) {
   await connectDB();
@@ -13,18 +12,7 @@ export async function POST(req) {
       { status: 400 }
     );
   }
-
   const user = new User({ email, name, role, password });
-  const activeUser = await ActiveSession.findOne();
-  if (activeUser) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Another user is already logged in. Logout first.",
-      },
-      { status: 403 }
-    );
-  }
   await user.save();
   return NextResponse.json(
     { success: true, message: "User registered successfully" },

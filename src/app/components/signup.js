@@ -1,6 +1,5 @@
-"use client"; // 👈 important
+"use client";
 import { useRouter } from "next/navigation";
-import styles from "./login.module.css";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 
