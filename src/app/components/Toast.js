@@ -1,42 +1,28 @@
 "use client";
+import { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { toast } from "sonner";
 import { hideToast } from "@/app/store/toastSlice";
-import { useEffect } from "react";
 
 export default function Toast() {
-  const dispatch = useDispatch();
   const toasts = useSelector((state) => state.toast);
+  const dispatch = useDispatch();
+  const shownToasts = useRef(new Set());
 
   useEffect(() => {
-    if (toasts.length > 0) {
-      const timers = toasts.map((t) =>
-        setTimeout(() => dispatch(hideToast(t.id)), 3000)
-      );
-      return () => timers.forEach(clearTimeout);
-    }
+    toasts.forEach((t) => {
+      if (shownToasts.current.has(t.id)) return;
+
+      if (t.type === "success") toast.success(t.message);
+      else if (t.type === "error") toast.error(t.message);
+      else if (t.type === "warning") toast.warning(t.message);
+      else toast(t.message);
+
+      shownToasts.current.add(t.id);
+
+      setTimeout(() => dispatch(hideToast(t.id)), 3000);
+    });
   }, [toasts, dispatch]);
 
-  return (
-    <div className="position-fixed top-0 end-0 p-3" style={{ zIndex: 9999 }}>
-      {toasts.map((toast) => (
-        <div
-          key={toast.id}
-          className={`toast align-items-center text-bg-${toast.type} border-0 show mb-2`}
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
-          style={{ minWidth: "250px" }}
-        >
-          <div className="d-flex">
-            <div className="toast-body">{toast.message}</div>
-            <button
-              type="button"
-              className="btn-close btn-close-white me-2 m-auto"
-              onClick={() => dispatch(hideToast(toast.id))}
-            ></button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  return null;
 }

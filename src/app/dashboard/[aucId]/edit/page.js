@@ -6,8 +6,15 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
+import { useDispatch } from "react-redux";
+import { showToast } from "@/app/store/toastSlice";
 
 const EditAuction = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const { aucId } = useParams();
+  const dispatch = useDispatch();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startingPrice, setStartingPrice] = useState("");
@@ -18,13 +25,11 @@ const EditAuction = () => {
   const [images, setImages] = useState("");
   const [cloudImg, setCloudImg] = useState("");
 
-  const { data: session } = useSession();
-  const router = useRouter();
-  const { aucId } = useParams();
-
   useEffect(() => {
     async function fetchAuction() {
-      const res = await fetch(`/api/auction/${aucId}`);
+      const controller = new AbortController();
+      const signal = controller.signal;
+      const res = await fetch(`/api/auction/${aucId}`, { signal });
       const result = await res.json();
       const {
         title,
@@ -50,6 +55,7 @@ const EditAuction = () => {
       }
     }
     fetchAuction();
+    return () => controller.abort();
   }, [aucId]);
 
   const getImage = (data) => {
@@ -57,13 +63,23 @@ const EditAuction = () => {
     setCloudImg(data.info.public_id);
   };
   const delImg = async (id) => {
-    let res = await fetch("/api/cloudinary/" + id, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-    res = await res.json();
-    if (res.success) {
-      setImages("");
+    try {
+      const response = await fetch("/api/cloudinary/" + id, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setImages("");
+        dispatch(showToast({ message: res.message, type: "success" }));
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
     }
   };
 
@@ -80,25 +96,34 @@ const EditAuction = () => {
     );
 
   const handleSubmitForm = async () => {
-    let res = await fetch("/api/auction/" + aucId, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        description,
-        startingPrice,
-        images,
-        status,
-        currentPrice,
-        startTime,
-        endTime,
-        cloudImg,
-      }),
-    });
-    res = await res.json();
-    if (res.success) {
-      router.push("/dashboard");
-      alert("Auction updated successfully");
+    try {
+      const response = await fetch("/api/auction/" + aucId, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          startingPrice,
+          images,
+          status,
+          currentPrice,
+          startTime,
+          endTime,
+          cloudImg,
+        }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        router.push("/dashboard");
+        dispatch(showToast({ message: result.message, type: "success" }));
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
     }
   };
 

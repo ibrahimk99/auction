@@ -3,30 +3,56 @@ import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
 
 const DashboardAuction = () => {
   const [aucDetail, setAucDetail] = useState("");
   const router = useRouter();
-
   const params = useParams();
   const { aucId } = params;
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    async function fetchAuctions() {
-      let res = await fetch(`/api/auction/${aucId}`);
-      res = await res.json();
-      setAucDetail(res.data);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    try {
+      async function fetchAuctions() {
+        const response = await fetch(`/api/auction/${aucId}`, { signal });
+        const result = await response.json();
+        setAucDetail(result.data);
+      }
+      if (aucId) {
+        fetchAuctions();
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
     }
-    if (aucId) fetchAuctions();
+    return () => controller.abort();
   }, [aucId]);
 
   const delAuction = async (id) => {
-    let res = await fetch("/api/auction/" + id, {
-      method: "DELETE",
-    });
-    res = await res.json();
-    if (res.success) {
-      router.push("/dashboard");
+    try {
+      const response = await fetch("/api/auction/" + id, {
+        method: "DELETE",
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        router.push("/dashboard");
+        dispatch(showToast({ message: result.message, type: "success" }));
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
     }
   };
 
@@ -43,8 +69,6 @@ const DashboardAuction = () => {
     endTime,
     status,
   } = aucDetail[0];
-
-  new Date(endTime.toLocaleString("en-PK"));
 
   return (
     <div>

@@ -8,4 +8,4 @@ const connectDB = async () => {
   return mongoose.connect(MONGODB_URI);
 };
 
-export default connectDB; //
+export default connectDB;

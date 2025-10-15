@@ -2,6 +2,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
 
 const UserSignup = () => {
   const [name, setName] = useState("");
@@ -9,25 +11,48 @@ const UserSignup = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("buyer");
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const handleSignup = async (e) => {
     e.preventDefault();
-    let res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }),
-    });
-    if (res.ok) {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
       });
+      if (response.ok) {
+        const result = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
 
-      if (!result?.error) {
-        router.push("/user-auth");
-      } else {
-        router.push("/home");
+        if (!result?.error) {
+          router.push("/user-auth");
+          dispatch(
+            showToast({
+              message: "Login Failed",
+              type: "warning",
+            })
+          );
+        } else {
+          router.push("/home");
+          dispatch(
+            showToast({
+              message: "Login Successfuly",
+              type: "success",
+            })
+          );
+        }
       }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
     }
   };
 

@@ -6,10 +6,13 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
+import { useDispatch } from "react-redux";
+import { showToast } from "@/app/store/toastSlice";
 
 const CreateAuction = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -33,6 +36,7 @@ const CreateAuction = () => {
     res = await res.json();
     if (res.success) {
       setImages("");
+      dispatch(showToast({ message: res.message, type: "success" }));
     }
   };
 
@@ -49,24 +53,36 @@ const CreateAuction = () => {
     );
 
   const handleSubmitForm = async () => {
-    let res = await fetch("/api/auction", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        description,
-        startingPrice,
-        images,
-        status,
-        currentPrice,
-        startTime,
-        endTime,
-        cloudImg,
-        sellerId: session?.user.id,
-      }),
-    });
-    res = await res.json();
-    router.push("/dashboard");
+    try {
+      let res = await fetch("/api/auction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          description,
+          startingPrice,
+          images,
+          status,
+          currentPrice,
+          startTime,
+          endTime,
+          cloudImg,
+          sellerId: session?.user.id,
+        }),
+      });
+      res = await res.json();
+      if (res.success) {
+        router.push("/dashboard");
+        dispatch(showToast({ message: res.message, type: "success" }));
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
+    }
   };
 
   return (

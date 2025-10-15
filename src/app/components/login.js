@@ -1,15 +1,15 @@
-"use client"; // 👈 important
+"use client";
 import { signIn } from "next-auth/react";
-import styles from "./login.module.css";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
-
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
 const UserLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { data: session } = useSession();
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const handleSubmitForm = async (e) => {
     e.preventDefault();
     const res = await signIn("credentials", {
@@ -18,9 +18,19 @@ const UserLogin = () => {
       password,
     });
     if (res.error) {
-      alert("Login failed: " + res.error);
+      dispatch(
+        showToast({
+          message: res.error,
+          type: "warning",
+        })
+      );
     } else {
-      alert("Login successful!");
+      dispatch(
+        showToast({
+          message: "Login Successfuly",
+          type: "success",
+        })
+      );
       router.push("/");
     }
   };

@@ -18,18 +18,26 @@ export default function ExampleButton() {
       <button
         className="btn btn-danger me-2"
         onClick={() =>
-          dispatch(showToast({ message: "Error occurred!", type: "danger" }))
+          dispatch(showToast({ message: "Error occurred!", type: "error" }))
         }
       >
         Show Error
       </button>
       <button
-        className="btn btn-warning"
+        className="btn btn-warning me-2"
         onClick={() =>
           dispatch(showToast({ message: "Be careful!", type: "warning" }))
         }
       >
         Show Warning
+      </button>
+      <button
+        className="btn btn-secondary"
+        onClick={() =>
+          dispatch(showToast({ message: "Hello from Redux!", type: "info" }))
+        }
+      >
+        Show Info
       </button>
     </div>
   );

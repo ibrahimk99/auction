@@ -50,7 +50,7 @@ export const authOptions = {
       return session;
     },
   },
-  // 👇 Add events hook here
+
   events: {
     async signOut(message) {
       console.log("User signed out", message);

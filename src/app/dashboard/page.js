@@ -5,27 +5,48 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
 
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
+  const dispatch = useDispatch();
   useEffect(() => {
-    fetchAuctions();
-  }, []);
+    if (session) {
+      fetchAuctions();
+    }
+  }, [session]);
 
   const fetchAuctions = async () => {
-    let res = await fetch("/api/dashboard");
-    res = await res.json();
-    setAuctions(res.data);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    try {
+      const response = await fetch("/api/dashboard", { signal });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAuctions(result.data);
+        dispatch(showToast({ message: result.message, type: "success" }));
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
+    }
+    return () => controller.abort();
   };
 
-  if (!session)
+  if (!session) {
     return (
       <p className="text-center mt-5">
-        ⚠️ Please login first <Link href="/user-auth">Log in Here</Link>
+        Please login first <Link href="/user-auth">Log in Here</Link>
       </p>
     );
+  }
 
   return (
     <div>

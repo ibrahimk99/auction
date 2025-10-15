@@ -14,9 +14,11 @@ const GetAuction = () => {
   const { auctionId } = useParams();
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchAuction = async () => {
       try {
-        const res = await fetch(`/api/auction/${auctionId}`);
+        const res = await fetch(`/api/auction/${auctionId}`, { signal });
         const data = await res.json();
         setAucDetail(data.data[0]);
       } catch (error) {
@@ -26,6 +28,7 @@ const GetAuction = () => {
     if (auctionId) {
       fetchAuction();
     }
+    return () => controller.abort();
   }, [auctionId]);
 
   if (!aucDetail) {
@@ -45,6 +48,12 @@ const GetAuction = () => {
   const increaseBid = async () => {
     if (!session?.user?.id) {
       router.push("/user-auth");
+      dispatch(
+        showToast({
+          message: "You are Not Login",
+          type: "warning",
+        })
+      );
       return;
     }
     if (!bidPrice || isNaN(bidPrice) || Number(bidPrice) <= 0) {

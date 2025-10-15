@@ -11,9 +11,24 @@ export default function Home() {
   }, []);
 
   const fetchAuctions = async () => {
-    let res = await fetch("/api/auction");
-    res = await res.json();
-    setAuctions(res.data);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    try {
+      const response = await fetch("/api/auction", { signal });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAuctions(result.data);
+      }
+    } catch (error) {
+      dispatch(
+        showToast({
+          message: "Network Error Please Try Again Later",
+          type: "warning",
+        })
+      );
+    }
+
+    return () => controller.abort();
   };
 
   return (
