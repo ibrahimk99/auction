@@ -4,7 +4,7 @@ import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { showToast } from "../store/toastSlice";
+import { showToast } from "@/app/store/toastSlice";
 
 const DashboardAuction = () => {
   const [aucDetail, setAucDetail] = useState("");
