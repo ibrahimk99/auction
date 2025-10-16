@@ -32,6 +32,7 @@ const UserSignup = () => {
           router.push("/user-auth");
           dispatch(
             showToast({
+              id: "login failed",
               message: "Login Failed",
               type: "warning",
             })
@@ -40,6 +41,7 @@ const UserSignup = () => {
           router.push("/home");
           dispatch(
             showToast({
+              id: "login",
               message: "Login Successfuly",
               type: "success",
             })
@@ -49,6 +51,7 @@ const UserSignup = () => {
     } catch (error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: "Network Error Please Try Again Later",
           type: "warning",
         })

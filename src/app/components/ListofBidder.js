@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { showToast } from "../store/toastSlice";
+
 export default function ListofBidder({ bidPrice }) {
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,25 +14,36 @@ export default function ListofBidder({ bidPrice }) {
 
   useEffect(() => {
     fetchBids();
-  }, [bidPrice]);
+  }, [bidPrice, auctionId]);
+
   const fetchBids = async () => {
     const controller = new AbortController();
     const signal = controller.signal;
     try {
       const response = await fetch("/api/biding/" + auctionId, { signal });
       const result = await response.json();
-
       if (response.ok && result.success) {
-        setBids(result.data || []);
-        dispatch(showToast({ message: result.message, type: "success" }));
+        setBids(result.data);
+        dispatch(
+          showToast({
+            id: "bids-fetched",
+            message: result.message,
+            type: "success",
+          })
+        );
       }
     } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
       dispatch(
         showToast({
-          message: "Network Error Please Try Again Later",
+          id: "network-error",
+          message: "Network Error! Please try again later.",
           type: "warning",
         })
       );
+      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }

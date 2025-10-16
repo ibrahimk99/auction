@@ -3,9 +3,12 @@ import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useDispatch } from "react-redux";
+import { showToast } from "../store/toastSlice";
 export default function Home() {
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
+  const dispatch = useDispatch();
   useEffect(() => {
     fetchAuctions();
   }, []);
@@ -20,14 +23,18 @@ export default function Home() {
         setAuctions(result.data);
       }
     } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
       dispatch(
         showToast({
-          message: "Network Error Please Try Again Later",
+          id: "network-error",
+          message: "Network Error! Please try again later.",
           type: "warning",
         })
       );
+      console.error("Fetch error:", error);
     }
-
     return () => controller.abort();
   };
 
@@ -51,6 +58,7 @@ export default function Home() {
                     width={100}
                     height={200}
                     objectFit="cover"
+                    priority
                   />
 
                   <div className="card-body d-flex flex-column">
@@ -91,5 +99,3 @@ export default function Home() {
     </div>
   );
 }
-
-// app/page.js (or pages/index.js if using Pages Router)

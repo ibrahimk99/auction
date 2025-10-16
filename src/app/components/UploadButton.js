@@ -4,7 +4,7 @@ export default function UploadButton({ getImage }) {
   return (
     <CldUploadButton
       className="btn btn-sm btn-primary"
-      uploadPreset="next_uploads" // 👈 your preset name
+      uploadPreset="next_uploads"
       onSuccess={(result) => {
         getImage(result);
       }}

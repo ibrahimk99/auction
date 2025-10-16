@@ -2,9 +2,11 @@
 import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import ListofBidder from "@/app/components/ListofBidder";
+import { useDispatch } from "react-redux";
+import { showToast } from "@/app/store/toastSlice";
 
 const GetAuction = () => {
   const [aucDetail, setAucDetail] = useState(null);
@@ -12,25 +14,45 @@ const GetAuction = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const { auctionId } = useParams();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    const fetchAuction = async () => {
-      try {
-        const res = await fetch(`/api/auction/${auctionId}`, { signal });
-        const data = await res.json();
-        setAucDetail(data.data[0]);
-      } catch (error) {
-        console.error("Failed to fetch auction:", error);
-      }
-    };
     if (auctionId) {
       fetchAuction();
     }
-    return () => controller.abort();
   }, [auctionId]);
+  const fetchAuction = async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    try {
+      const response = await fetch(`/api/auction/${auctionId}`, { signal });
+      const result = await response.json();
 
+      if (response.ok && result.success) {
+        setAucDetail(result.data[0]);
+        dispatch(
+          showToast({
+            id: "auction-fetched",
+            message: result.message,
+            type: "success",
+          })
+        );
+      }
+    } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
+      dispatch(
+        showToast({
+          id: "network-error",
+          message: "Network Error! Please try again later.",
+          type: "warning",
+        })
+      );
+      console.error("Fetch error:", error);
+    }
+    return () => controller.abort();
+  };
   if (!aucDetail) {
     return <h1 className="text-center mt-5">Loading...</h1>;
   }
@@ -50,6 +72,7 @@ const GetAuction = () => {
       router.push("/user-auth");
       dispatch(
         showToast({
+          id: "network-error",
           message: "You are Not Login",
           type: "warning",
         })
@@ -61,7 +84,7 @@ const GetAuction = () => {
       return;
     }
     try {
-      const res = await fetch(`/api/biding`, {
+      const resp = await fetch(`/api/biding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,23 +93,38 @@ const GetAuction = () => {
           amount: Number(bidPrice),
         }),
       });
-      await res.json();
+      const res = await resp.json();
 
       const updatedPrice = Number(currentPrice) + Number(bidPrice);
-      const updateRes = await fetch(`/api/auction/${auctionId}`, {
+      const response = await fetch(`/api/auction/${auctionId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPrice: updatedPrice }),
       });
-      await updateRes.json();
-
-      setAucDetail((prev) => ({
-        ...prev,
-        currentPrice: updatedPrice,
-      }));
-      setBidPrice("");
+      const result = await response.json();
+      if (response.ok && result.success) {
+        setAucDetail((prev) => ({
+          ...prev,
+          currentPrice: updatedPrice,
+        }));
+        setBidPrice("");
+        dispatch(
+          showToast({
+            id: "bid-update",
+            message: result.message,
+            type: "success",
+          })
+        );
+      }
     } catch (error) {
-      console.error("Failed to increase bid:", error);
+      dispatch(
+        showToast({
+          id: "network-error",
+          message: "Network Error! Please try again later.",
+          type: "warning",
+        })
+      );
+      console.error("Fetch error:", error);
     }
   };
 
@@ -99,6 +137,7 @@ const GetAuction = () => {
           <div className="col-12 col-lg-6">
             <div className="card shadow-sm border-0">
               <CldImage
+                priority
                 width="800"
                 height="600"
                 src={images}

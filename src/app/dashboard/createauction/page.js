@@ -36,7 +36,13 @@ const CreateAuction = () => {
     res = await res.json();
     if (res.success) {
       setImages("");
-      dispatch(showToast({ message: res.message, type: "success" }));
+      dispatch(
+        showToast({
+          id: "auction-delete",
+          message: res.message,
+          type: "success",
+        })
+      );
     }
   };
 
@@ -71,13 +77,21 @@ const CreateAuction = () => {
         }),
       });
       res = await res.json();
+      0;
       if (res.success) {
         router.push("/dashboard");
-        dispatch(showToast({ message: res.message, type: "success" }));
+        dispatch(
+          showToast({
+            id: "auction-fetched",
+            message: res.message,
+            type: "success",
+          })
+        );
       }
     } catch (error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: "Network Error Please Try Again Later",
           type: "warning",
         })
@@ -130,6 +144,7 @@ const CreateAuction = () => {
                   width={80}
                   height={80}
                   objectFit="cover"
+                  priority
                 />
               </div>
             )}

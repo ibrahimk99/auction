@@ -26,12 +26,17 @@ const DashboardAuction = () => {
         fetchAuctions();
       }
     } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
       dispatch(
         showToast({
-          message: "Network Error Please Try Again Later",
+          id: "network-error",
+          message: "Network Error! Please try again later.",
           type: "warning",
         })
       );
+      console.error("Fetch error:", error);
     }
     return () => controller.abort();
   }, [aucId]);
@@ -44,15 +49,23 @@ const DashboardAuction = () => {
       const result = await response.json();
       if (response.ok && result.success) {
         router.push("/dashboard");
-        dispatch(showToast({ message: result.message, type: "success" }));
+        dispatch(
+          showToast({
+            id: "auction-delete",
+            message: result.message,
+            type: "success",
+          })
+        );
       }
     } catch (error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: "Network Error Please Try Again Later",
           type: "warning",
         })
       );
+      console.error("Fetch error:", error);
     }
   };
 
@@ -81,7 +94,7 @@ const DashboardAuction = () => {
               height="400"
               src={images} // must be Cloudinary public_id
               alt={title}
-              // gravity="auto"
+              priority
               className="img-fluid rounded-shadow"
             />
           </div>

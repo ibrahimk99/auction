@@ -20,6 +20,7 @@ const UserLogin = () => {
     if (res.error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: res.error,
           type: "warning",
         })
@@ -27,6 +28,7 @@ const UserLogin = () => {
     } else {
       dispatch(
         showToast({
+          id: "login",
           message: "Login Successfuly",
           type: "success",
         })

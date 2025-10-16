@@ -8,15 +8,14 @@ export async function GET(req, { params }) {
   try {
     const { id } = await params;
     await connectDB();
-    const biding = await bidModel
-      .find({})
+    const data = await bidModel
+      .find({ auctionId: id })
       .populate("auctionId")
       .populate("bidderId")
       .lean();
-    const data = biding.filter((bid) => id == bid.auctionId._id);
     return NextResponse.json({
       success: true,
-      message: "Bids Data Successfuly fetched ",
+      message: "Bids Data Successfuly fetched",
       data,
     });
   } catch (error) {

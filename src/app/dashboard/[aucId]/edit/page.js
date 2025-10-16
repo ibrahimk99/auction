@@ -26,37 +26,37 @@ const EditAuction = () => {
   const [cloudImg, setCloudImg] = useState("");
 
   useEffect(() => {
-    async function fetchAuction() {
-      const controller = new AbortController();
-      const signal = controller.signal;
-      const res = await fetch(`/api/auction/${aucId}`, { signal });
-      const result = await res.json();
-      const {
-        title,
-        description,
-        startingPrice,
-        currentPrice,
-        startTime,
-        endTime,
-        status,
-        images,
-        cloudImg,
-      } = result.data[0];
-      if (result.success) {
-        setTitle(title);
-        setDescription(description);
-        setStartingPrice(startingPrice);
-        setCurrentPrice(currentPrice);
-        setStartTime(startTime);
-        setEndTime(endTime);
-        setStatus(status);
-        setImages(images);
-        setCloudImg(cloudImg);
-      }
-    }
     fetchAuction();
-    return () => controller.abort();
   }, [aucId]);
+  const fetchAuction = async () => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const res = await fetch(`/api/auction/${aucId}`, { signal });
+    const result = await res.json();
+    const {
+      title,
+      description,
+      startingPrice,
+      currentPrice,
+      startTime,
+      endTime,
+      status,
+      images,
+      cloudImg,
+    } = result.data[0];
+    if (result.success) {
+      setTitle(title);
+      setDescription(description);
+      setStartingPrice(startingPrice);
+      setCurrentPrice(currentPrice);
+      setStartTime(startTime);
+      setEndTime(endTime);
+      setStatus(status);
+      setImages(images);
+      setCloudImg(cloudImg);
+    }
+    return () => controller.abort();
+  };
 
   const getImage = (data) => {
     setImages(data.info.secure_url);
@@ -71,11 +71,14 @@ const EditAuction = () => {
       const result = await response.json();
       if (response.ok && result.success) {
         setImages("");
-        dispatch(showToast({ message: res.message, type: "success" }));
+        dispatch(
+          showToast({ id: "image-del", message: res.message, type: "success" })
+        );
       }
     } catch (error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: "Network Error Please Try Again Later",
           type: "warning",
         })
@@ -114,12 +117,19 @@ const EditAuction = () => {
       });
       const result = await response.json();
       if (response.ok && result.success) {
+        dispatch(
+          showToast({
+            id: "auction-edit",
+            message: result.message,
+            type: "success",
+          })
+        );
         router.push("/dashboard");
-        dispatch(showToast({ message: result.message, type: "success" }));
       }
     } catch (error) {
       dispatch(
         showToast({
+          id: "network-error",
           message: "Network Error Please Try Again Later",
           type: "warning",
         })
@@ -171,6 +181,7 @@ const EditAuction = () => {
                   className="img-thumbnail"
                   width={80}
                   height={80}
+                  priority
                   objectFit="cover"
                 />
               </div>

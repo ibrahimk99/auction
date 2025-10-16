@@ -27,15 +27,26 @@ export default function Dashboard() {
       const result = await response.json();
       if (response.ok && result.success) {
         setAuctions(result.data);
-        dispatch(showToast({ message: result.message, type: "success" }));
+        dispatch(
+          showToast({
+            id: "auction-fetched",
+            message: result.message,
+            type: "success",
+          })
+        );
       }
     } catch (error) {
+      if (error.name === "AbortError") {
+        return;
+      }
       dispatch(
         showToast({
-          message: "Network Error Please Try Again Later",
+          id: "network-error",
+          message: "Network Error! Please try again later.",
           type: "warning",
         })
       );
+      console.error("Fetch error:", error);
     }
     return () => controller.abort();
   };
@@ -74,6 +85,7 @@ export default function Dashboard() {
                     alt={auction.title}
                     width={200}
                     height={200}
+                    priority
                     objectFit="cover"
                   />
 
