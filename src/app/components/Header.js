@@ -19,7 +19,7 @@ const Header = () => {
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <div className="container-fluid">
         {/* Brand / Logo */}
-        <Link className="navbar-brand fw-bold" href="/home">
+        <Link className="navbar-brand fw-bold" href="/">
           Auction App
         </Link>
 

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { showToast } from "../store/toastSlice";
+
 export default function Home() {
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
