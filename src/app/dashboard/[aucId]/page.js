@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/app/store/toastSlice";
+import { safeFetch } from "@/app/utils/safeFetch";
 
 const DashboardAuction = () => {
   const [aucDetail, setAucDetail] = useState("");
@@ -15,27 +16,18 @@ const DashboardAuction = () => {
 
   const fetchAucDetail = useCallback(
     async (signal) => {
-      try {
-        const response = await fetch(`/api/auction/${aucId}`, { signal });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          setAucDetail(result.data);
-        }
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-        dispatch(
-          showToast({
-            id: "network-error",
-            message: "Network Error! Please try again later.",
-            type: "warning",
-          })
-        );
-        console.error("Fetch error:", error);
+      const data = await safeFetch(
+        `/api/auction/${aucId}`,
+        null,
+        {},
+        null,
+        signal
+      );
+      if (data) {
+        setAucDetail(data);
       }
     },
-    [aucId, dispatch]
+    [aucId]
   );
   useEffect(() => {
     const controller = new AbortController();
@@ -47,30 +39,17 @@ const DashboardAuction = () => {
   }, [aucId, fetchAucDetail]);
 
   const delAuction = async (id) => {
-    try {
-      const response = await fetch("/api/auction/" + id, {
+    const data = await safeFetch(
+      `/api/auction/${id}`,
+      dispatch,
+      {
         method: "DELETE",
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        router.push("/dashboard");
-        dispatch(
-          showToast({
-            id: "auction-delete",
-            message: result.message,
-            type: "success",
-          })
-        );
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error Please Try Again Later",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
+      },
+      "auction-delete",
+      null
+    );
+    if (data) {
+      router.push("/dashboard");
     }
   };
 
@@ -97,8 +76,9 @@ const DashboardAuction = () => {
             <CldImage
               width="500"
               height="400"
-              src={images} // must be Cloudinary public_id
+              src={images}
               alt={title}
+              style={{ width: "100%", height: "auto" }}
               priority
               className="img-fluid rounded-shadow"
             />

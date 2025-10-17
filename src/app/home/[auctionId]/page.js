@@ -7,10 +7,12 @@ import { useSession } from "next-auth/react";
 import ListofBidder from "@/app/components/ListofBidder";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/app/store/toastSlice";
+import { safeFetch } from "@/app/utils/safeFetch";
 
 const GetAuction = () => {
   const [aucDetail, setAucDetail] = useState(null);
   const [bidPrice, setBidPrice] = useState("");
+  const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
   const router = useRouter();
   const { auctionId } = useParams();
@@ -18,31 +20,16 @@ const GetAuction = () => {
 
   const fetchAuction = useCallback(
     async (signal) => {
-      try {
-        const response = await fetch(`/api/auction/${auctionId}`, { signal });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          setAucDetail(result.data[0]);
-          dispatch(
-            showToast({
-              id: "auction-fetched",
-              message: result.message,
-              type: "success",
-            })
-          );
-        }
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-        dispatch(
-          showToast({
-            id: "network-error",
-            message: "Network Error! Please try again later.",
-            type: "warning",
-          })
-        );
-        console.error("Fetch error:", error);
+      const data = await safeFetch(
+        `/api/auction/${auctionId}`,
+        dispatch,
+        {},
+        "auction-fetched",
+        signal
+      );
+      if (data) {
+        setAucDetail(data[0]);
+        setLoading(false);
       }
     },
     [auctionId, dispatch]
@@ -57,10 +44,9 @@ const GetAuction = () => {
     return () => controller.abort();
   }, [auctionId, fetchAuction]);
 
-  if (!aucDetail) {
+  if (loading) {
     return <h1 className="text-center mt-5">Loading...</h1>;
   }
-
   const {
     title,
     description,
@@ -71,67 +57,62 @@ const GetAuction = () => {
     endTime,
     status,
   } = aucDetail;
+
   const increaseBid = async () => {
     if (!session?.user?.id) {
       router.push("/user-auth");
       dispatch(
         showToast({
           id: "network-error",
-          message: "You are Not Login",
+          message: "You are not logged in",
           type: "warning",
         })
       );
       return;
     }
+
     if (!bidPrice || isNaN(bidPrice) || Number(bidPrice) <= 0) {
       alert("Please enter a valid bid amount.");
       return;
     }
-    try {
-      const resp = await fetch(`/api/biding`, {
+
+    const bidAmount = Number(bidPrice);
+    const updatedPrice = Number(currentPrice) + bidAmount;
+    const bidRes = await safeFetch(
+      `/api/biding`,
+      dispatch,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           auctionId,
           bidderId: session.user.id,
-          amount: Number(bidPrice),
+          amount: bidAmount,
         }),
-      });
-      const res = await resp.json();
+      },
+      "bid-placed",
+      null
+    );
 
-      const updatedPrice = Number(currentPrice) + Number(bidPrice);
-      const response = await fetch(`/api/auction/${auctionId}`, {
+    if (!bidRes) return;
+    const updateResp = await safeFetch(
+      `/api/auction/${auctionId}`,
+      dispatch,
+      {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPrice: updatedPrice }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setAucDetail((prev) => ({
-          ...prev,
-          currentPrice: updatedPrice,
-        }));
-        setBidPrice("");
-        dispatch(
-          showToast({
-            id: "bid-update",
-            message: result.message,
-            type: "success",
-          })
-        );
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
-    }
+      },
+      "bid-update",
+      null
+    );
+    if (!updateResp) return;
+    setAucDetail((prev) => ({
+      ...prev,
+      currentPrice: updatedPrice,
+    }));
+    setBidPrice("");
   };
-
   return (
     <div>
       <Header />
@@ -146,6 +127,7 @@ const GetAuction = () => {
                 height="600"
                 src={images}
                 alt={title}
+                style={{ width: "100%", height: "auto" }}
                 className="img-fluid rounded-top"
               />
               <div className="card-body">

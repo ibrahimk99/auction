@@ -3,13 +3,18 @@ import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
 import UserLogin from "@/app/components/login";
 import UserSignup from "@/app/components/signup";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import { useDispatch, useSelector } from "react-redux";
+import { loginPageAction } from "../store/loginPageSlice";
 const UserAuth = () => {
   const { status } = useSession();
-  const [login, setLogin] = useState(true);
   const router = useRouter();
+  const loginPage = useSelector((state) => state.loginPage);
+  const dispatch = useDispatch();
+  const handleLoginPage = (value) => {
+    dispatch(loginPageAction.setLogin(value));
+  };
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -24,18 +29,17 @@ const UserAuth = () => {
     <div>
       <Header />
       <div>
-        {login ? (
+        {loginPage ? (
           <div>
             <UserLogin />
-            <button onClick={() => setLogin(false)}>
+            <button onClick={() => handleLoginPage(false)}>
               if already have no Account plz Signup
             </button>
           </div>
         ) : (
           <div>
-            {" "}
             <UserSignup />
-            <button onClick={() => setLogin(true)}>
+            <button onClick={() => handleLoginPage(true)}>
               if already have Account plz Login
             </button>
           </div>

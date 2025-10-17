@@ -2,39 +2,20 @@
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { useEffect, useState, useCallback } from "react";
-import Image from "next/image";
 import { useDispatch } from "react-redux";
-import { showToast } from "../store/toastSlice";
+import { safeFetch } from "../utils/safeFetch";
+import { CldImage } from "next-cloudinary";
 
 export default function Home() {
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
-  const dispatch = useDispatch();
 
-  const fetchAuctions = useCallback(
-    async (signal) => {
-      try {
-        const response = await fetch("/api/auction", { signal });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          setAuctions(result.data);
-        }
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-        dispatch(
-          showToast({
-            id: "network-error",
-            message: "Network Error! Please try again later.",
-            type: "warning",
-          })
-        );
-        console.error("Fetch error:", error);
-      }
-    },
-    [dispatch]
-  );
+  const fetchAuctions = useCallback(async (signal) => {
+    const data = await safeFetch("/api/auction", null, {}, null, signal);
+    if (data) {
+      setAuctions(data);
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -56,14 +37,14 @@ export default function Home() {
                 className="col-lg-3 col-md-6 col-sm-8 col-12 mb-4"
               >
                 <div className="card h-100 shadow-sm">
-                  <Image
+                  <CldImage
                     src={auction.images}
-                    className="card-img-top"
+                    width={400}
+                    height={250}
+                    crop="fill"
+                    gravity="auto"
                     alt={auction.title}
-                    width={100}
-                    height={200}
-                    objectFit="cover"
-                    priority
+                    className="card-img-top rounded-2xl w-full h-auto"
                   />
 
                   <div className="card-body d-flex flex-column">

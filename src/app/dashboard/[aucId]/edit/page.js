@@ -8,6 +8,7 @@ import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/app/store/toastSlice";
+import { safeFetch } from "@/app/utils/safeFetch";
 
 const EditAuction = () => {
   const { data: session } = useSession();
@@ -27,8 +28,13 @@ const EditAuction = () => {
 
   const fetchAuction = useCallback(
     async (signal) => {
-      const res = await fetch(`/api/auction/${aucId}`, { signal });
-      const result = await res.json();
+      const data = await safeFetch(
+        `/api/auction/${aucId}`,
+        null,
+        {},
+        null,
+        signal
+      );
       const {
         title,
         description,
@@ -39,8 +45,8 @@ const EditAuction = () => {
         status,
         images,
         cloudImg,
-      } = result.data[0];
-      if (result.success) {
+      } = data[0];
+      if (data) {
         setTitle(title);
         setDescription(description);
         setStartingPrice(startingPrice);
@@ -67,36 +73,26 @@ const EditAuction = () => {
     setCloudImg(data.info.public_id);
   };
   const delImg = async (id) => {
-    try {
-      const response = await fetch("/api/cloudinary/" + id, {
+    const data = await safeFetch(
+      `/api/cloudinary/${id}`,
+      dispatch,
+      {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setImages("");
-        dispatch(
-          showToast({
-            id: "image-del",
-            message: result.message,
-            type: "success",
-          })
-        );
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error Please Try Again Later",
-          type: "warning",
-        })
-      );
+      },
+      "image-del",
+      null
+    );
+    if (data) {
+      setImages("");
     }
   };
 
   const handleSubmitForm = async () => {
-    try {
-      const response = await fetch("/api/auction/" + aucId, {
+    const data = await safeFetch(
+      `/api/auction/${aucId}`,
+      dispatch,
+      {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,26 +106,12 @@ const EditAuction = () => {
           endTime,
           cloudImg,
         }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        dispatch(
-          showToast({
-            id: "auction-edit",
-            message: result.message,
-            type: "success",
-          })
-        );
-        router.push("/dashboard");
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error Please Try Again Later",
-          type: "warning",
-        })
-      );
+      },
+      "auction-edit",
+      null
+    );
+    if (data) {
+      router.push("/dashboard");
     }
   };
   if (!session)

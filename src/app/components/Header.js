@@ -1,18 +1,31 @@
 "use client";
-
+import { useDispatch } from "react-redux";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
+import { loginPageAction } from "../store/loginPageSlice";
 
 const Header = () => {
+  const handleLoginPage = (value) => {
+    dispatch(loginPageAction.setLogin(value));
+  };
+
   const router = useRouter();
   const { data: session } = useSession();
+  const dispatch = useDispatch();
 
   const handleSignOut = () => {
     signOut();
-    alert("User SignOut Successfully");
-    router.push("/home");
+    router.replace("/home");
+    dispatch({
+      type: "toast/showToast",
+      payload: {
+        id: "logout-success",
+        message: "Logout Successfully",
+        type: "success",
+      },
+    });
   };
 
   return (
@@ -73,12 +86,12 @@ const Header = () => {
               </>
             ) : (
               <>
-                <li className="nav-item">
+                <li className="nav-item" onClick={() => handleLoginPage(true)}>
                   <Link className="nav-link" href="/user-auth">
                     Login
                   </Link>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item" onClick={() => handleLoginPage(false)}>
                   <Link className="nav-link" href="/user-auth">
                     Sign Up
                   </Link>

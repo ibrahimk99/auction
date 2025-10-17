@@ -3,7 +3,7 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { showToast } from "../store/toastSlice";
+import { safeFetch } from "../utils/safeFetch";
 
 export default function ListofBidder({ bidPrice }) {
   const [bids, setBids] = useState([]);
@@ -14,32 +14,15 @@ export default function ListofBidder({ bidPrice }) {
 
   const fetchBids = useCallback(
     async (signal) => {
-      try {
-        const response = await fetch(`/api/biding/${auctionId}`, { signal });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          setBids(result.data);
-          dispatch(
-            showToast({
-              id: "bids-fetched",
-              message: result.message,
-              type: "success",
-            })
-          );
-        }
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-        dispatch(
-          showToast({
-            id: "network-error",
-            message: "Network Error! Please try again later.",
-            type: "warning",
-          })
-        );
-        console.error("Fetch error:", error);
-      } finally {
+      const data = await safeFetch(
+        `/api/biding/${auctionId}`,
+        dispatch,
+        {},
+        "bids-fetched",
+        signal
+      );
+      if (data) {
+        setBids(data);
         setLoading(false);
       }
     },

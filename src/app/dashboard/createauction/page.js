@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
 import { useDispatch } from "react-redux";
-import { showToast } from "@/app/store/toastSlice";
+import { safeFetch } from "@/app/utils/safeFetch";
 
 const CreateAuction = () => {
   const { data: session } = useSession();
@@ -28,39 +28,27 @@ const CreateAuction = () => {
     setImages(data.info.secure_url);
     setCloudImg(data.info.public_id);
   };
+
   const delImg = async (id) => {
-    let res = await fetch("/api/cloudinary/" + id, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-    });
-    res = await res.json();
-    if (res.success) {
+    const data = await safeFetch(
+      `/api/cloudinary/${id}`,
+      dispatch,
+      {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      },
+      "auction-image-delete"
+    );
+    if (data) {
       setImages("");
-      dispatch(
-        showToast({
-          id: "auction-delete",
-          message: res.message,
-          type: "success",
-        })
-      );
     }
   };
 
-  if (!session)
-    return (
-      <div className="container text-center mt-5">
-        <p className="alert alert-danger">
-          You have no access to create auction
-        </p>
-        <Link href="/user-auth" className="btn btn-primary">
-          Login
-        </Link>
-      </div>
-    );
-
   const handleSubmitForm = async () => {
-    try {
-      let res = await fetch("/api/auction", {
+    const data = await safeFetch(
+      "/api/auction",
+      dispatch,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,30 +63,25 @@ const CreateAuction = () => {
           cloudImg,
           sellerId: session?.user.id,
         }),
-      });
-      res = await res.json();
-      0;
-      if (res.success) {
-        router.push("/dashboard");
-        dispatch(
-          showToast({
-            id: "auction-fetched",
-            message: res.message,
-            type: "success",
-          })
-        );
-      }
-    } catch (error) {
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error Please Try Again Later",
-          type: "warning",
-        })
-      );
+      },
+      "auction-created-successfully",
+      null
+    );
+    if (data) {
+      router.push("/dashboard");
     }
   };
-
+  if (!session)
+    return (
+      <div className="container text-center mt-5">
+        <p className="alert alert-danger">
+          You have no access to create auction
+        </p>
+        <Link href="/user-auth" className="btn btn-primary">
+          Login
+        </Link>
+      </div>
+    );
   return (
     <div>
       <Header />

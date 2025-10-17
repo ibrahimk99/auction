@@ -1,43 +1,43 @@
 export async function safeFetch(
   url,
-  dispatch,
+  dispatch = null,
   options = {},
-  successId = "fetch-success"
+  successId = null,
+  signal = null
 ) {
-  const controller = new AbortController();
-  const signal = controller.signal;
-
   try {
     const response = await fetch(url, { ...options, signal });
     const result = await response.json();
 
     if (response.ok && result.success) {
-      if (result.message) {
+      if (dispatch && result.message) {
         dispatch({
           type: "toast/showToast",
           payload: {
-            id: successId,
+            id: successId || "success",
             message: result.message,
             type: "success",
           },
         });
       }
       return result.data;
-    } else {
-      throw new Error(result.message || "Request failed");
     }
-  } catch (error) {
-    if (error.name === "AbortError") return;
-    dispatch({
-      type: "toast/showToast",
-      payload: {
-        id: "network-error",
-        message: "Network Error! Please try again later.",
-        type: "warning",
-      },
-    });
-    console.error("Fetch error:", error);
-  }
 
-  return null;
+    throw new Error(result.message || "Request failed");
+  } catch (error) {
+    if (error.name === "AbortError") return null;
+    if (dispatch) {
+      dispatch({
+        type: "toast/showToast",
+        payload: {
+          id: "network-error",
+          message: "Network Error! Please try again later.",
+          type: "warning",
+        },
+      });
+    }
+
+    console.error("safeFetch error:", error);
+    return null;
+  }
 }

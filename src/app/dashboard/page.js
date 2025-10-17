@@ -7,53 +7,33 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { showToast } from "../store/toastSlice";
+import { safeFetch } from "../utils/safeFetch";
 
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
-  const [fetched, setFetched] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
 
   const fetchAuctions = useCallback(
     async (signal) => {
-      try {
-        const response = await fetch("/api/dashboard", { signal });
-        const result = await response.json();
-        if (response.ok && result.success) {
-          setAuctions(result.data);
-          if (!fetched) {
-            dispatch(
-              showToast({
-                id: "auction-fetched",
-                message: result.message,
-                type: "success",
-              })
-            );
-          }
-        }
-      } catch (error) {
-        if (error.name === "AbortError") {
-          return;
-        }
-        dispatch(
-          showToast({
-            id: "network-error",
-            message: "Network Error! Please try again later.",
-            type: "warning",
-          })
-        );
-        console.error("Fetch error:", error);
+      const data = await safeFetch(
+        "/api/dashboard",
+        dispatch,
+        {},
+        "auction-fetched",
+        signal
+      );
+      if (data) {
+        setAuctions(data);
       }
     },
-    [fetched, dispatch]
+    [dispatch]
   );
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    if (session) {
-      fetchAuctions(signal);
-    }
+    fetchAuctions(signal);
     return () => controller.abort();
   }, [fetchAuctions, session]);
   if (!session) {
