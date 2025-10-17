@@ -2,7 +2,7 @@
 import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/app/store/toastSlice";
 
@@ -13,33 +13,38 @@ const DashboardAuction = () => {
   const { aucId } = params;
   const dispatch = useDispatch();
 
+  const fetchAucDetail = useCallback(
+    async (signal) => {
+      try {
+        const response = await fetch(`/api/auction/${aucId}`, { signal });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setAucDetail(result.data);
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+        dispatch(
+          showToast({
+            id: "network-error",
+            message: "Network Error! Please try again later.",
+            type: "warning",
+          })
+        );
+        console.error("Fetch error:", error);
+      }
+    },
+    [aucId, dispatch]
+  );
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    try {
-      async function fetchAuctions() {
-        const response = await fetch(`/api/auction/${aucId}`, { signal });
-        const result = await response.json();
-        setAucDetail(result.data);
-      }
-      if (aucId) {
-        fetchAuctions();
-      }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        return;
-      }
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
+    if (aucId) {
+      fetchAucDetail(signal);
     }
     return () => controller.abort();
-  }, [aucId]);
+  }, [aucId, fetchAucDetail]);
 
   const delAuction = async (id) => {
     try {

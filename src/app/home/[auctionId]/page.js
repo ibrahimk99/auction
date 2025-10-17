@@ -2,7 +2,7 @@
 import { CldImage } from "next-cloudinary";
 import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import ListofBidder from "@/app/components/ListofBidder";
 import { useDispatch } from "react-redux";
@@ -16,43 +16,47 @@ const GetAuction = () => {
   const { auctionId } = useParams();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (auctionId) {
-      fetchAuction();
-    }
-  }, [auctionId]);
-  const fetchAuction = async () => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    try {
-      const response = await fetch(`/api/auction/${auctionId}`, { signal });
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setAucDetail(result.data[0]);
+  const fetchAuction = useCallback(
+    async (signal) => {
+      try {
+        const response = await fetch(`/api/auction/${auctionId}`, { signal });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setAucDetail(result.data[0]);
+          dispatch(
+            showToast({
+              id: "auction-fetched",
+              message: result.message,
+              type: "success",
+            })
+          );
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
         dispatch(
           showToast({
-            id: "auction-fetched",
-            message: result.message,
-            type: "success",
+            id: "network-error",
+            message: "Network Error! Please try again later.",
+            type: "warning",
           })
         );
+        console.error("Fetch error:", error);
       }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        return;
-      }
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
+    },
+    [auctionId, dispatch]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    if (auctionId) {
+      fetchAuction(signal);
     }
     return () => controller.abort();
-  };
+  }, [auctionId, fetchAuction]);
+
   if (!aucDetail) {
     return <h1 className="text-center mt-5">Loading...</h1>;
   }

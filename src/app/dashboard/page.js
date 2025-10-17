@@ -1,7 +1,7 @@
 "use client";
 import Header from "@/app/components/Header";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -11,46 +11,51 @@ import { showToast } from "../store/toastSlice";
 export default function Dashboard() {
   const { data: session } = useSession();
   const [auctions, setAuctions] = useState([]);
+  const [fetched, setFetched] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
-  useEffect(() => {
-    if (session) {
-      fetchAuctions();
-    }
-  }, [session]);
 
-  const fetchAuctions = async () => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    try {
-      const response = await fetch("/api/dashboard", { signal });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setAuctions(result.data);
+  const fetchAuctions = useCallback(
+    async (signal) => {
+      try {
+        const response = await fetch("/api/dashboard", { signal });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setAuctions(result.data);
+          if (!fetched) {
+            dispatch(
+              showToast({
+                id: "auction-fetched",
+                message: result.message,
+                type: "success",
+              })
+            );
+          }
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
         dispatch(
           showToast({
-            id: "auction-fetched",
-            message: result.message,
-            type: "success",
+            id: "network-error",
+            message: "Network Error! Please try again later.",
+            type: "warning",
           })
         );
+        console.error("Fetch error:", error);
       }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        return;
-      }
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
+    },
+    [fetched, dispatch]
+  );
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    if (session) {
+      fetchAuctions(signal);
     }
     return () => controller.abort();
-  };
-
+  }, [fetchAuctions, session]);
   if (!session) {
     return (
       <p className="text-center mt-5">

@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useDispatch } from "react-redux";
 import { showToast } from "../store/toastSlice";
@@ -10,34 +10,38 @@ export default function Home() {
   const [auctions, setAuctions] = useState([]);
   const router = useRouter();
   const dispatch = useDispatch();
-  useEffect(() => {
-    fetchAuctions();
-  }, []);
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = useCallback(
+    async (signal) => {
+      try {
+        const response = await fetch("/api/auction", { signal });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setAuctions(result.data);
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
+        dispatch(
+          showToast({
+            id: "network-error",
+            message: "Network Error! Please try again later.",
+            type: "warning",
+          })
+        );
+        console.error("Fetch error:", error);
+      }
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    try {
-      const response = await fetch("/api/auction", { signal });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setAuctions(result.data);
-      }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        return;
-      }
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
-    }
+    fetchAuctions(signal);
     return () => controller.abort();
-  };
+  }, [fetchAuctions]);
 
   return (
     <div>

@@ -1,6 +1,6 @@
 "use client";
 import Header from "./components/Header";
-
+import Link from "next/link";
 const HomePage = () => {
   return (
     <div className="bg-dark min-vh-100 d-flex flex-column">
@@ -16,9 +16,9 @@ const HomePage = () => {
           <p className="lead mb-5 text-secondary">
             Discover, bid, and win exclusive treasures in real-time auctions.
           </p>
-          <a href="/home" className="btn btn-warning btn-lg px-5 shadow-lg">
+          <Link href="/home" className="btn btn-warning btn-lg px-5 shadow-lg">
             Start Bidding
-          </a>
+          </Link>
         </div>
       </section>
       <footer className="bg-black text-center text-secondary py-3 mt-auto border-top border-secondary">

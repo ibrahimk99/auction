@@ -1,6 +1,6 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { showToast } from "../store/toastSlice";
@@ -12,43 +12,46 @@ export default function ListofBidder({ bidPrice }) {
   const { auctionId } = params;
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    fetchBids();
-  }, [bidPrice, auctionId]);
-
-  const fetchBids = async () => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-    try {
-      const response = await fetch("/api/biding/" + auctionId, { signal });
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setBids(result.data);
+  const fetchBids = useCallback(
+    async (signal) => {
+      try {
+        const response = await fetch(`/api/biding/${auctionId}`, { signal });
+        const result = await response.json();
+        if (response.ok && result.success) {
+          setBids(result.data);
+          dispatch(
+            showToast({
+              id: "bids-fetched",
+              message: result.message,
+              type: "success",
+            })
+          );
+        }
+      } catch (error) {
+        if (error.name === "AbortError") {
+          return;
+        }
         dispatch(
           showToast({
-            id: "bids-fetched",
-            message: result.message,
-            type: "success",
+            id: "network-error",
+            message: "Network Error! Please try again later.",
+            type: "warning",
           })
         );
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        return;
-      }
-      dispatch(
-        showToast({
-          id: "network-error",
-          message: "Network Error! Please try again later.",
-          type: "warning",
-        })
-      );
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
-    }
+    },
+    [auctionId, dispatch]
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetchBids(signal);
     return () => controller.abort();
-  };
+  }, [bidPrice, auctionId, fetchBids]);
 
   if (loading) {
     return (

@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Header from "@/app/components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -25,38 +25,42 @@ const EditAuction = () => {
   const [images, setImages] = useState("");
   const [cloudImg, setCloudImg] = useState("");
 
+  const fetchAuction = useCallback(
+    async (signal) => {
+      const res = await fetch(`/api/auction/${aucId}`, { signal });
+      const result = await res.json();
+      const {
+        title,
+        description,
+        startingPrice,
+        currentPrice,
+        startTime,
+        endTime,
+        status,
+        images,
+        cloudImg,
+      } = result.data[0];
+      if (result.success) {
+        setTitle(title);
+        setDescription(description);
+        setStartingPrice(startingPrice);
+        setCurrentPrice(currentPrice);
+        setStartTime(startTime);
+        setEndTime(endTime);
+        setStatus(status);
+        setImages(images);
+        setCloudImg(cloudImg);
+      }
+    },
+    [aucId]
+  );
+
   useEffect(() => {
-    fetchAuction();
-  }, [aucId]);
-  const fetchAuction = async () => {
     const controller = new AbortController();
     const signal = controller.signal;
-    const res = await fetch(`/api/auction/${aucId}`, { signal });
-    const result = await res.json();
-    const {
-      title,
-      description,
-      startingPrice,
-      currentPrice,
-      startTime,
-      endTime,
-      status,
-      images,
-      cloudImg,
-    } = result.data[0];
-    if (result.success) {
-      setTitle(title);
-      setDescription(description);
-      setStartingPrice(startingPrice);
-      setCurrentPrice(currentPrice);
-      setStartTime(startTime);
-      setEndTime(endTime);
-      setStatus(status);
-      setImages(images);
-      setCloudImg(cloudImg);
-    }
+    fetchAuction(signal);
     return () => controller.abort();
-  };
+  }, [fetchAuction, aucId]);
 
   const getImage = (data) => {
     setImages(data.info.secure_url);
@@ -72,7 +76,11 @@ const EditAuction = () => {
       if (response.ok && result.success) {
         setImages("");
         dispatch(
-          showToast({ id: "image-del", message: res.message, type: "success" })
+          showToast({
+            id: "image-del",
+            message: result.message,
+            type: "success",
+          })
         );
       }
     } catch (error) {
@@ -85,18 +93,6 @@ const EditAuction = () => {
       );
     }
   };
-
-  if (!session)
-    return (
-      <div className="container text-center mt-5">
-        <p className="alert alert-danger">
-          You have no access to create auction
-        </p>
-        <Link href="/user-auth" className="btn btn-primary">
-          Login
-        </Link>
-      </div>
-    );
 
   const handleSubmitForm = async () => {
     try {
@@ -136,6 +132,17 @@ const EditAuction = () => {
       );
     }
   };
+  if (!session)
+    return (
+      <div className="container text-center mt-5">
+        <p className="alert alert-danger">
+          You have no access to create auction
+        </p>
+        <Link href="/user-auth" className="btn btn-primary">
+          Login
+        </Link>
+      </div>
+    );
 
   return (
     <div>
