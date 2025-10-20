@@ -64,6 +64,11 @@ const Header = () => {
                 Create Auction
               </Link>
             </li>
+            <li className="nav-item">
+              <Link className="nav-link" href="/dashboard/watchlist">
+                WatchList
+              </Link>
+            </li>
           </ul>
           {/* Right Side: Auth Links */}
           <ul className="navbar-nav">

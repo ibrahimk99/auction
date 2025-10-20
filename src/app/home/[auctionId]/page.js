@@ -4,10 +4,16 @@ import Header from "@/app/components/Header";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import ListofBidder from "@/app/components/ListofBidder";
 import { useDispatch } from "react-redux";
 import { showToast } from "@/app/store/toastSlice";
 import { safeFetch } from "@/app/utils/safeFetch";
+import dynamic from "next/dynamic";
+import WatchList from "@/app/components/WatchList";
+
+const ListofBidder = dynamic(() => import("@/app/components/ListofBidder"), {
+  // loading: () => <p>Loading bidders...</p>,
+  ssr: false,
+});
 
 const GetAuction = () => {
   const [aucDetail, setAucDetail] = useState(null);
@@ -38,9 +44,7 @@ const GetAuction = () => {
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    if (auctionId) {
-      fetchAuction(signal);
-    }
+    fetchAuction(signal);
     return () => controller.abort();
   }, [auctionId, fetchAuction]);
 
@@ -63,7 +67,7 @@ const GetAuction = () => {
       router.push("/user-auth");
       dispatch(
         showToast({
-          id: "network-error",
+          id: "login-error",
           message: "You are not logged in",
           type: "warning",
         })
@@ -178,9 +182,7 @@ const GetAuction = () => {
                     >
                       Place a Bid
                     </button>
-                    <button className="btn btn-outline-secondary w-100 w-sm-auto">
-                      Add to Watchlist
-                    </button>
+                    <WatchList id={auctionId} />
                   </div>
                 </div>
               </div>

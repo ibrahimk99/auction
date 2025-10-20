@@ -4,6 +4,7 @@ import bidSlice from "./bidSlice";
 import fetchStatusSlice from "./fetchStatusSlice";
 import toastSlice from "./toastSlice";
 import loginPageSlice from "./loginPageSlice";
+import addToWatchSlice from "./addToWatchSlice";
 
 const auctionStore = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const auctionStore = configureStore({
     fetchStatus: fetchStatusSlice.reducer,
     toast: toastSlice.reducer,
     loginPage: loginPageSlice.reducer,
+    addToWatch: addToWatchSlice.reducer,
   },
 });
 export default auctionStore;

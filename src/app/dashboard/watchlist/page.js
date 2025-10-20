@@ -1,72 +1,65 @@
 "use client";
-import Header from "@/app/components/Header";
-import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { safeFetch } from "@/app/utils/safeFetch";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { safeFetch } from "../utils/safeFetch";
+import { useSession } from "next-auth/react";
+import Header from "@/app/components/Header";
+import Image from "next/image";
+import { addToWatchAction } from "@/app/store/addToWatchSlice";
 
-export default function Dashboard() {
+const WatchList = () => {
   const { data: session } = useSession();
-  const [auctions, setAuctions] = useState([]);
-  const router = useRouter();
   const dispatch = useDispatch();
-
-  const fetchAuctions = useCallback(
+  const id = session?.user?.id;
+  const [favourites, setFavourites] = useState([]);
+  const fetchWatchList = useCallback(
     async (signal) => {
       const data = await safeFetch(
-        "/api/dashboard",
+        "/api/watchlist/" + id,
         dispatch,
-        {},
-        "auction-fetched",
+        {
+          method: "GET",
+          credentials: "include",
+        },
+        "fetch-watchlist",
         signal
       );
       if (data) {
-        setAuctions(data);
+        setFavourites(data.auctions);
+        const ids = data.auctions.map((item) => item._id);
+        dispatch(addToWatchAction.setWatchList(ids));
       }
     },
-    [dispatch]
+    [id, dispatch]
   );
+
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    fetchAuctions(signal);
+    if (!id) return; //
+    fetchWatchList(signal);
     return () => controller.abort();
-  }, [fetchAuctions, session]);
-  if (!session) {
-    return (
-      <p className="text-center mt-5">
-        Please login first <Link href="/user-auth">Log in Here</Link>
-      </p>
-    );
-  }
+  }, [id, fetchWatchList]);
 
   return (
     <div>
       <Header />
       <div className="container mt-4">
-        <h2 className="mb-4">
-          Welcome <span className="text-primary">{session.user.name}</span>,
-          Role: <span className="badge bg-info">{session.user.role}</span>
-        </h2>
-
-        {auctions.length > 0 ? (
+        {favourites.length > 0 ? (
           <div className="row">
-            {auctions.map((auction, idx) => (
+            {favourites.map((favourite, idx) => (
               <div
                 className="col-lg-3 col-md-6 col-sm-8 col-12 mb-4"
                 key={idx + 1}
               >
                 <div
                   className="card shadow-sm h-100"
-                  onClick={() => router.push("/dashboard/" + auction._id)}
+                  onClick={() => router.push("/dashboard/" + favourite._id)}
                 >
                   <Image
-                    src={auction.images}
+                    src={favourite.images}
                     className="card-img-top"
-                    alt={auction.title}
+                    alt={favourite.title}
                     width={200}
                     height={200}
                     priority
@@ -74,38 +67,38 @@ export default function Dashboard() {
                   />
 
                   <div className="card-body">
-                    <h5 className="card-title">{auction.title}</h5>
+                    <h5 className="card-title">{favourite.title}</h5>
                     <p className="card-text text-muted">
-                      {auction.description}
+                      {favourite.description}
                     </p>
 
                     <p className="mb-1">
                       <span className="fw-bold">💰 Starting:</span>{" "}
-                      {auction.startingPrice} PKR
+                      {favourite.startingPrice} PKR
                     </p>
                     <p className="mb-1">
                       <span className="fw-bold">💰 Current:</span>{" "}
-                      {auction.currentPrice} PKR
+                      {favourite.currentPrice} PKR
                     </p>
 
                     <p className="mb-1">
                       ⏰ <span className="fw-bold">Start:</span>{" "}
-                      {new Date(auction.startTime).toLocaleString()}
+                      {new Date(favourite.startTime).toLocaleString()}
                     </p>
                     <p className="mb-2">
                       ⏳ <span className="fw-bold">End:</span>{" "}
-                      {new Date(auction.endTime).toLocaleString()}
+                      {new Date(favourite.endTime).toLocaleString()}
                     </p>
                     <span
                       className={`badge ${
-                        auction.status === "active"
+                        favourite.status === "active"
                           ? "bg-success"
-                          : auction.status === "upcoming"
+                          : favourite.status === "upcoming"
                           ? "bg-warning text-dark"
                           : "bg-secondary"
                       }`}
                     >
-                      {auction.status}
+                      {favourite.status}
                     </span>
                   </div>
                 </div>
@@ -118,4 +111,6 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default WatchList;
