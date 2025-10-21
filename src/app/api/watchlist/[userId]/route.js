@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import WatchList from "@/app/models/WatchList";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import auctionModel from "@/app/models/auctionModel";
 
 export async function GET(req, { params }) {
   const { userId } = await params;

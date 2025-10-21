@@ -1,13 +1,15 @@
-import { useDispatch, useSelector } from "react-redux";
-import { addToWatchAction } from "../store/addToWatchSlice";
+"use client";
+import { useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
 import { safeFetch } from "../utils/safeFetch";
+import { useCallback, useEffect, useState } from "react";
 
-const WatchList = ({ id }) => {
+const WatchList = ({ aucId }) => {
+  const [watchList, setWatchList] = useState([]);
   const dispatch = useDispatch();
   const { data: session } = useSession();
-  const watchList = useSelector((state) => state.addToWatch);
-  console.log({ watchList });
+  const userId = session?.user?.id;
+
   const addToWatch = async () => {
     const data = await safeFetch(
       "/api/watchlist",
@@ -16,22 +18,21 @@ const WatchList = ({ id }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user: session.user.id,
-          auctions: id,
+          user: userId,
+          auctions: aucId,
         }),
       },
       "watchlist-updated",
       null
     );
-
-    if (data.modifiedCount > 0) {
-      dispatch(addToWatchAction.setWatchList(id));
+    if (data) {
+      setWatchList((prev) => [...prev, aucId]);
     }
   };
 
   const removeFromWatch = async () => {
     const data = await safeFetch(
-      "/api/watchlist/" + id,
+      "/api/watchlist/" + aucId,
       dispatch,
       {
         method: "DELETE",
@@ -41,14 +42,38 @@ const WatchList = ({ id }) => {
       null
     );
     if (data) {
-      dispatch(addToWatchAction.removeFromWatchList(id));
+      setWatchList((prev) => prev.filter((id) => id !== aucId));
     }
   };
-  const isInWatchlist = watchList.includes(id);
+  const fetchIds = useCallback(
+    async (signal) => {
+      const data = await safeFetch(
+        "/api/watchlist/" + userId,
+        null,
+        {},
+        null,
+        signal
+      );
+      if (data) {
+        const idsData = data.auctions.map((item) => item._id);
+        setWatchList(idsData);
+      }
+    },
+    [userId]
+  );
 
+  useEffect(() => {
+    if (!userId) return;
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetchIds(signal);
+    return () => controller.abort();
+  }, [userId, fetchIds]);
+
+  const isInWatchList = watchList.includes(aucId);
   return (
     <>
-      {isInWatchlist ? (
+      {isInWatchList ? (
         <button
           onClick={removeFromWatch}
           className="btn btn-outline-danger w-100"

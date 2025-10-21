@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import { useEffect, useState, useCallback } from "react";
-import { useDispatch } from "react-redux";
 import { safeFetch } from "../utils/safeFetch";
 import { CldImage } from "next-cloudinary";
 

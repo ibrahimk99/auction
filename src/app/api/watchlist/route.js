@@ -1,6 +1,8 @@
 import connectDB from "@/app/lib/connectDB";
 import { NextResponse } from "next/server";
 import WatchList from "@/app/models/WatchList";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req) {
   try {
@@ -23,4 +25,14 @@ export async function POST(req) {
       error: error.message,
     });
   }
+}
+
+export async function DELETE(req) {
+  const session = await getServerSession(authOptions);
+  await connectDB();
+  await WatchList.deleteMany({ user: session.user.id });
+  return NextResponse.json({
+    success: true,
+    message: "All Auctions removed from WatchList ",
+  });
 }

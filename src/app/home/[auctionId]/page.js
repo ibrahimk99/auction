@@ -182,7 +182,7 @@ const GetAuction = () => {
                     >
                       Place a Bid
                     </button>
-                    <WatchList id={auctionId} />
+                    <WatchList aucId={auctionId} />
                   </div>
                 </div>
               </div>

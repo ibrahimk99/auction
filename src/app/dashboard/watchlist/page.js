@@ -5,17 +5,19 @@ import { useDispatch } from "react-redux";
 import { useSession } from "next-auth/react";
 import Header from "@/app/components/Header";
 import Image from "next/image";
-import { addToWatchAction } from "@/app/store/addToWatchSlice";
+import { useRouter } from "next/navigation";
 
 const WatchList = () => {
   const { data: session } = useSession();
   const dispatch = useDispatch();
-  const id = session?.user?.id;
+  const userId = session?.user?.id;
   const [favourites, setFavourites] = useState([]);
+  const router = useRouter();
+
   const fetchWatchList = useCallback(
     async (signal) => {
       const data = await safeFetch(
-        "/api/watchlist/" + id,
+        "/api/watchlist/" + userId,
         dispatch,
         {
           method: "GET",
@@ -26,24 +28,37 @@ const WatchList = () => {
       );
       if (data) {
         setFavourites(data.auctions);
-        const ids = data.auctions.map((item) => item._id);
-        dispatch(addToWatchAction.setWatchList(ids));
       }
     },
-    [id, dispatch]
+    [userId, dispatch]
   );
 
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    if (!id) return; //
+    if (!userId) return; //
     fetchWatchList(signal);
     return () => controller.abort();
-  }, [id, fetchWatchList]);
+  }, [userId, dispatch, fetchWatchList]);
 
+  const clearWatchList = async () => {
+    const data = await safeFetch(
+      "/api/watchlist/",
+      dispatch,
+      {
+        method: "DELETE",
+      },
+      "fetch-watchlist",
+      null
+    );
+    if (data) {
+      setFavourites([]);
+    }
+  };
   return (
     <div>
       <Header />
+      <button onClick={clearWatchList}>Clear WacthList</button>
       <div className="container mt-4">
         {favourites.length > 0 ? (
           <div className="row">
@@ -54,7 +69,7 @@ const WatchList = () => {
               >
                 <div
                   className="card shadow-sm h-100"
-                  onClick={() => router.push("/dashboard/" + favourite._id)}
+                  onClick={() => router.push("/home/" + favourite._id)}
                 >
                   <Image
                     src={favourite.images}
