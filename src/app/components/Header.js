@@ -2,7 +2,6 @@
 import { useDispatch } from "react-redux";
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FaUserCircle } from "react-icons/fa";
 import { loginPageAction } from "../store/loginPageSlice";
 
@@ -11,13 +10,11 @@ const Header = () => {
     dispatch(loginPageAction.setLogin(value));
   };
 
-  const router = useRouter();
   const { data: session } = useSession();
   const dispatch = useDispatch();
 
   const handleSignOut = () => {
     signOut();
-    router.replace("/home");
     dispatch({
       type: "toast/showToast",
       payload: {
@@ -31,12 +28,9 @@ const Header = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-4">
       <div className="container-fluid">
-        {/* Brand / Logo */}
         <Link className="navbar-brand fw-bold" href="/">
           Auction App
         </Link>
-
-        {/* Navbar toggler for mobile */}
         <button
           className="navbar-toggler"
           type="button"
@@ -46,7 +40,6 @@ const Header = () => {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Links */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
@@ -70,7 +63,6 @@ const Header = () => {
               </Link>
             </li>
           </ul>
-          {/* Right Side: Auth Links */}
           <ul className="navbar-nav">
             {session ? (
               <>

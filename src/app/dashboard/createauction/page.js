@@ -37,7 +37,7 @@ const CreateAuction = () => {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       },
-      "auction-image-delete"
+      Date.now()
     );
     if (data) {
       setImages("");
@@ -64,7 +64,7 @@ const CreateAuction = () => {
           sellerId: session?.user.id,
         }),
       },
-      "auction-created-successfully",
+      Date.now(),
       null
     );
     if (data) {

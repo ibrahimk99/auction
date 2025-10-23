@@ -15,6 +15,8 @@ const auctionSchema = new Schema({
     default: "upcoming",
   },
   sellerId: { type: Schema.Types.ObjectId, ref: "User" },
+  winnerId: { type: Schema.Types.ObjectId, ref: "User" },
+  finalPrice: Number,
 });
 
 export default mongoose.models.Auction ||

@@ -9,9 +9,9 @@ import { showToast } from "@/app/store/toastSlice";
 import { safeFetch } from "@/app/utils/safeFetch";
 import dynamic from "next/dynamic";
 import WatchList from "@/app/components/WatchList";
+import Clock from "@/app/components/Clock";
 
 const ListofBidder = dynamic(() => import("@/app/components/ListofBidder"), {
-  // loading: () => <p>Loading bidders...</p>,
   ssr: false,
 });
 
@@ -67,7 +67,7 @@ const GetAuction = () => {
       router.push("/user-auth");
       dispatch(
         showToast({
-          id: "login-error",
+          id: Date.now(),
           message: "You are not logged in",
           type: "warning",
         })
@@ -75,13 +75,13 @@ const GetAuction = () => {
       return;
     }
 
-    if (!bidPrice || isNaN(bidPrice) || Number(bidPrice) <= 0) {
+    if (!bidPrice || isNaN(bidPrice) || Number(bidPrice) <= currentPrice) {
       alert("Please enter a valid bid amount.");
       return;
     }
 
     const bidAmount = Number(bidPrice);
-    const updatedPrice = Number(currentPrice) + bidAmount;
+    // const updatedPrice = Number(currentPrice) + bidAmount;
     const bidRes = await safeFetch(
       `/api/biding`,
       dispatch,
@@ -94,7 +94,7 @@ const GetAuction = () => {
           amount: bidAmount,
         }),
       },
-      "bid-placed",
+      Date.now(),
       null
     );
 
@@ -105,21 +105,22 @@ const GetAuction = () => {
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPrice: updatedPrice }),
+        body: JSON.stringify({ currentPrice: bidAmount }),
       },
-      "bid-update",
+      Date.now(),
       null
     );
     if (!updateResp) return;
     setAucDetail((prev) => ({
       ...prev,
-      currentPrice: updatedPrice,
+      currentPrice: bidAmount,
     }));
     setBidPrice("");
   };
   return (
     <div>
       <Header />
+      <Clock endTime={endTime} startTime={startTime} />
       <div className="container mt-5">
         <h2 className="text-center text-md-start mb-4">{title}</h2>
         <div className="row g-4">

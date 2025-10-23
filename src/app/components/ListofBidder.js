@@ -18,7 +18,7 @@ export default function ListofBidder({ bidPrice }) {
         `/api/biding/${auctionId}`,
         dispatch,
         {},
-        "bids-fetched",
+        Date.now(),
         signal
       );
       if (data) {

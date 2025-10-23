@@ -22,7 +22,7 @@ const WatchList = ({ aucId }) => {
           auctions: aucId,
         }),
       },
-      "watchlist-updated",
+      Date.now(),
       null
     );
     if (data) {
@@ -38,13 +38,14 @@ const WatchList = ({ aucId }) => {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       },
-      "watchlist-removed",
+      Date.now(),
       null
     );
     if (data) {
       setWatchList((prev) => prev.filter((id) => id !== aucId));
     }
   };
+
   const fetchIds = useCallback(
     async (signal) => {
       const data = await safeFetch(

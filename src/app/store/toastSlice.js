@@ -10,14 +10,13 @@ const toastSlice = createSlice({
       const exists = state.some(
         (t) => t.message === message && t.type === type
       );
-      // if (!exists) {
-      //   state.push({ id: id || Date.now(), message, type });
-      // }
+      if (!exists) {
+        state.push({ id: id || Date.now(), message, type });
+      }
     },
     hideToast: (state, action) => {
       return state.filter((t) => t.id !== action.payload);
     },
-    clearToasts: () => [],
   },
 });
 

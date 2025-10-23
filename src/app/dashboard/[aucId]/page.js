@@ -45,7 +45,7 @@ const DashboardAuction = () => {
       {
         method: "DELETE",
       },
-      "auction-delete",
+      Date.now(),
       null
     );
     if (data) {

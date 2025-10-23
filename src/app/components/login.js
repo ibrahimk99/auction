@@ -20,7 +20,7 @@ const UserLogin = () => {
     if (res.error) {
       dispatch(
         showToast({
-          id: "network-error",
+          id: Date.now(),
           message: res.error,
           type: "warning",
         })

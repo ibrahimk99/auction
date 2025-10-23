@@ -1,6 +1,7 @@
 {
   "name": "auction1",
   "version": "0.1.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -9,10 +10,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.4",
+    "@mui/material-nextjs": "^7.3.3",
     "@reduxjs/toolkit": "^2.9.0",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.8",
     "cloudinary": "^2.7.0",
+    "cron": "^4.3.3",
     "mongoose": "^8.18.2",
     "next": "15.5.4",
     "next-auth": "^4.24.11",

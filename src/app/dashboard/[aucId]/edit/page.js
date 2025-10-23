@@ -7,7 +7,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import UploadButton from "@/app/components/UploadButton";
 import { useDispatch } from "react-redux";
-import { showToast } from "@/app/store/toastSlice";
 import { safeFetch } from "@/app/utils/safeFetch";
 
 const EditAuction = () => {
@@ -80,7 +79,7 @@ const EditAuction = () => {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       },
-      "image-del",
+      Date.now(),
       null
     );
     if (data) {
@@ -107,7 +106,7 @@ const EditAuction = () => {
           cloudImg,
         }),
       },
-      "auction-edit",
+      Date.now(),
       null
     );
     if (data) {
