@@ -1,61 +1,45 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
-import { Card, CardContent, Typography, Button, Box } from "@mui/material";
+import { Typography, Box } from "@mui/material";
+import { useAuctionTimer } from "../utils/useAuctionTimer";
 
 const Clock = ({ startTime, endTime }) => {
-  const [time, setTime] = useState();
-
-  function formatDuration(ms) {
-    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((ms / (1000 * 60)) % 60);
-    const seconds = Math.floor((ms / 1000) % 60);
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-  }
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const start = new Date(startTime);
-      const end = new Date(endTime);
-
-      const timeUntilStart = start - now;
-      const timeUntilEnd = end - now;
-
-      if (timeUntilStart > 0) {
-        setTime(`Starts in ${formatDuration(timeUntilStart)}`);
-      } else if (timeUntilEnd > 0) {
-        setTime(`Ends in ${formatDuration(timeUntilEnd)}`);
-      } else {
-        setTime("Event Ended");
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [startTime, endTime]);
+  const { currentStatus, timeText } = useAuctionTimer(startTime, endTime);
 
   return (
     <Box
+      position="absolute"
+      top={62}
+      right={20}
+      zIndex={2}
       display="flex"
+      flexDirection="column"
       alignItems="center"
       justifyContent="center"
       bgcolor="background.default"
+      borderRadius={3}
+      width={300}
+      boxShadow={5}
+      p={2}
     >
-      <Card
-        sx={{
-          p: 4,
-          borderRadius: 4,
-          boxShadow: 6,
-          width: 360,
-          textAlign: "center",
-        }}
-      >
-        <CardContent>
-          <Typography variant="h2" fontWeight="bold" gutterBottom>
-            {time}
-          </Typography>
-        </CardContent>
-      </Card>
+      <Typography variant="h6" gutterBottom>
+        {timeText}
+      </Typography>
+
+      {currentStatus === "upcoming" && (
+        <Typography color="warning.main">
+          Auction hasn’t started yet ⏳
+        </Typography>
+      )}
+
+      {currentStatus === "running" && (
+        <>
+          <Typography color="success.main">Auction is LIVE 🔥</Typography>
+        </>
+      )}
+
+      {currentStatus === "ended" && (
+        <Typography color="error.main">Auction has ended 🏁</Typography>
+      )}
     </Box>
   );
 };

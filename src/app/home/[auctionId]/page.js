@@ -10,6 +10,7 @@ import { safeFetch } from "@/app/utils/safeFetch";
 import dynamic from "next/dynamic";
 import WatchList from "@/app/components/WatchList";
 import Clock from "@/app/components/Clock";
+import { useAuctionTimer } from "@/app/utils/useAuctionTimer";
 
 const ListofBidder = dynamic(() => import("@/app/components/ListofBidder"), {
   ssr: false,
@@ -20,10 +21,22 @@ const GetAuction = () => {
   const [bidPrice, setBidPrice] = useState("");
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession();
+  const [placeBid, setPlaceBid] = useState(true);
   const router = useRouter();
   const { auctionId } = useParams();
   const dispatch = useDispatch();
 
+  const { currentStatus } = useAuctionTimer(
+    aucDetail?.startTime,
+    aucDetail?.endTime
+  );
+  useEffect(() => {
+    if (currentStatus === "upcoming" || currentStatus === "ended") {
+      setPlaceBid(false);
+    } else {
+      setPlaceBid(true);
+    }
+  }, [currentStatus]);
   const fetchAuction = useCallback(
     async (signal) => {
       const data = await safeFetch(
@@ -81,7 +94,6 @@ const GetAuction = () => {
     }
 
     const bidAmount = Number(bidPrice);
-    // const updatedPrice = Number(currentPrice) + bidAmount;
     const bidRes = await safeFetch(
       `/api/biding`,
       dispatch,
@@ -117,11 +129,12 @@ const GetAuction = () => {
     }));
     setBidPrice("");
   };
+
   return (
     <div>
       <Header />
       <Clock endTime={endTime} startTime={startTime} />
-      <div className="container mt-5">
+      <div className="container ">
         <h2 className="text-center text-md-start mb-4">{title}</h2>
         <div className="row g-4">
           <div className="col-12 col-lg-6">
@@ -166,26 +179,31 @@ const GetAuction = () => {
                     </li>
                   </ul>
                 </div>
-
-                <div className="mt-4">
-                  <input
-                    type="number"
-                    className="form-control mb-3"
-                    value={bidPrice}
-                    onChange={(e) => setBidPrice(e.target.value)}
-                    placeholder="Enter your bid amount"
-                  />
-                  <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
-                    <button
-                      type="submit"
-                      className="btn btn-success w-100 w-sm-auto"
-                      onClick={increaseBid}
-                    >
-                      Place a Bid
-                    </button>
-                    <WatchList aucId={auctionId} />
+                {!placeBid ? (
+                  <p className="text-warning">
+                    Bidding is not allowed at this time.
+                  </p>
+                ) : (
+                  <div className="mt-4">
+                    <input
+                      type="number"
+                      className="form-control mb-3"
+                      value={bidPrice}
+                      onChange={(e) => setBidPrice(e.target.value)}
+                      placeholder="Enter your bid amount"
+                    />
+                    <div className="d-flex flex-column flex-sm-row justify-content-center gap-2">
+                      <button
+                        type="submit"
+                        className="btn btn-success w-100 w-sm-auto"
+                        onClick={increaseBid}
+                      >
+                        Place a Bid
+                      </button>
+                      <WatchList aucId={auctionId} />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
