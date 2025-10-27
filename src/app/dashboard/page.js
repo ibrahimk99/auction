@@ -46,36 +46,46 @@ export default function Dashboard() {
   return (
     <div>
       <Header />
+
       <div className="container mt-4">
-        <h2 className="mb-4">
+        {/* Greeting Section */}
+        <h2 className="mb-4 text-center">
           Welcome <span className="text-primary">{session.user.name}</span>,
           Role: <span className="badge bg-info">{session.user.role}</span>
         </h2>
 
+        {/* Auctions Grid */}
         {auctions.length > 0 ? (
-          <div className="row">
+          <div className="d-flex flex-wrap justify-content-center gap-4">
             {auctions.map((auction, idx) => (
               <div
-                className="col-lg-3 col-md-6 col-sm-8 col-12 mb-4"
                 key={idx + 1}
+                className="card shadow-sm flex-grow-1"
+                style={{
+                  maxWidth: "300px",
+                  minWidth: "260px",
+                  cursor: "pointer",
+                }}
+                onClick={() => router.push("/dashboard/" + auction._id)}
               >
-                <div
-                  className="card shadow-sm h-100"
-                  onClick={() => router.push("/dashboard/" + auction._id)}
-                >
-                  <Image
-                    src={auction.images}
-                    className="card-img-top"
-                    alt={auction.title}
-                    width={200}
-                    height={200}
-                    priority
-                    objectFit="cover"
-                  />
+                <Image
+                  src={auction.images}
+                  className="card-img-top"
+                  alt={auction.title}
+                  width={300}
+                  height={200}
+                  style={{
+                    objectFit: "cover",
+                    borderTopLeftRadius: "8px",
+                    borderTopRightRadius: "8px",
+                  }}
+                  priority
+                />
 
-                  <div className="card-body">
-                    <h5 className="card-title">{auction.title}</h5>
-                    <p className="card-text text-muted">
+                <div className="card-body d-flex flex-column justify-content-between">
+                  <div>
+                    <h5 className="card-title text-center">{auction.title}</h5>
+                    <p className="card-text text-muted small">
                       {auction.description}
                     </p>
 
@@ -88,14 +98,17 @@ export default function Dashboard() {
                       {auction.currentPrice} PKR
                     </p>
 
-                    <p className="mb-1">
+                    <p className="mb-1 small">
                       ⏰ <span className="fw-bold">Start:</span>{" "}
                       {new Date(auction.startTime).toLocaleString()}
                     </p>
-                    <p className="mb-2">
+                    <p className="mb-2 small">
                       ⏳ <span className="fw-bold">End:</span>{" "}
                       {new Date(auction.endTime).toLocaleString()}
                     </p>
+                  </div>
+
+                  <div className="text-center mt-3">
                     <span
                       className={`badge ${
                         auction.status === "active"

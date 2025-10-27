@@ -31,6 +31,7 @@ export function useAuctionTimer(startTime, endTime) {
       } else {
         setCurrentStatus("ended");
         setTimeText("Event Ended");
+        clearInterval(interval);
       }
     }, 1000);
 

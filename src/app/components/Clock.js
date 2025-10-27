@@ -27,18 +27,18 @@ const Clock = ({ startTime, endTime }) => {
 
       {currentStatus === "upcoming" && (
         <Typography color="warning.main">
-          Auction hasn’t started yet ⏳
+          Auction hasn’t Started yet ⏳
         </Typography>
       )}
 
       {currentStatus === "running" && (
         <>
-          <Typography color="success.main">Auction is LIVE 🔥</Typography>
+          <Typography color="success.main">Auction is Live</Typography>
         </>
       )}
 
       {currentStatus === "ended" && (
-        <Typography color="error.main">Auction has ended 🏁</Typography>
+        <Typography color="error.main">Auction has Ended</Typography>
       )}
     </Box>
   );
