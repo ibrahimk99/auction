@@ -16,13 +16,7 @@ export default function Dashboard() {
 
   const fetchAuctions = useCallback(
     async (signal) => {
-      const data = await safeFetch(
-        "/api/dashboard",
-        dispatch,
-        {},
-        "auction-fetched",
-        signal
-      );
+      const data = await safeFetch("/api/dashboard", null, {}, null, signal);
       if (data) {
         setAuctions(data);
       }
@@ -35,6 +29,7 @@ export default function Dashboard() {
     fetchAuctions(signal);
     return () => controller.abort();
   }, [fetchAuctions, session]);
+
   if (!session) {
     return (
       <p className="text-center mt-5">

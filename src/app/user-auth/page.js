@@ -7,11 +7,13 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { loginPageAction } from "../store/loginPageSlice";
+
 const UserAuth = () => {
   const { status } = useSession();
   const router = useRouter();
   const loginPage = useSelector((state) => state.loginPage);
   const dispatch = useDispatch();
+
   const handleLoginPage = (value) => {
     dispatch(loginPageAction.setLogin(value));
   };

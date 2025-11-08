@@ -80,7 +80,7 @@ const DashboardAuction = () => {
               alt={title}
               style={{ width: "100%", height: "auto" }}
               priority
-              className="img-fluid rounded-shadow"
+              className="img-fluid rounded-shadow rounded-4"
             />
           </div>
 

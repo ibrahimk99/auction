@@ -66,8 +66,11 @@ const UserSignup = () => {
           <div className="card shadow-lg">
             <div className="card-body p-4">
               <h3 className="card-title text-center mb-4">Signup</h3>
-              <form onSubmit={handleSignup}>
-                {/* Name */}
+              <form
+                onSubmit={handleSignup}
+                // novalidate
+                // className="needs-validation"
+              >
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">
                     Name
@@ -82,7 +85,6 @@ const UserSignup = () => {
                   />
                 </div>
 
-                {/* Email */}
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">
                     Email
@@ -97,7 +99,6 @@ const UserSignup = () => {
                   />
                 </div>
 
-                {/* Password */}
                 <div className="mb-3">
                   <label htmlFor="password" className="form-label">
                     Password
@@ -112,7 +113,6 @@ const UserSignup = () => {
                   />
                 </div>
 
-                {/* Role */}
                 <div className="mb-3">
                   <label htmlFor="role" className="form-label">
                     Role
@@ -129,7 +129,6 @@ const UserSignup = () => {
                   </select>
                 </div>
 
-                {/* Submit Button */}
                 <div className="d-grid">
                   <button type="submit" className="btn btn-primary">
                     Submit
