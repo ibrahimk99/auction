@@ -25,7 +25,7 @@ export function useAuctionTimer(startTime, endTime) {
       setCurrentStatus("upcoming");
       setTimeText(`Starts in ${formatDuration(timeUntilStart)}`);
     } else if (timeUntilEnd > 0) {
-      setCurrentStatus("active");
+      setCurrentStatus("running");
       setTimeText(`Ends in ${formatDuration(timeUntilEnd)}`);
     } else {
       setCurrentStatus("ended");

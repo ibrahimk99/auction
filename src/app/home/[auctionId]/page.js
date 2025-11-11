@@ -134,7 +134,7 @@ const GetAuction = () => {
       <Header />
       <Clock endTime={endTime} startTime={startTime} />
       <div className="container ">
-        <h2 className="text-center text-md-start mb-4">{title}</h2>
+        <h2 className=" text-md-start my-3">{title}</h2>
         <div className="row g-4">
           <div className="col-12 col-lg-6">
             <div className="card shadow-sm border-0">

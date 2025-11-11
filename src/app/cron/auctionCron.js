@@ -21,8 +21,8 @@ const job = new CronJob("*/30 * * * * *", async () => {
           await auction.save();
         }
       } else if (now >= start && now < end) {
-        if (auction.status !== "active") {
-          auction.status = "active";
+        if (auction.status !== "running") {
+          auction.status = "running";
           await auction.save();
         }
       } else if (now >= end && auction.status !== "ended") {
