@@ -14,15 +14,13 @@ export const authOptions = {
 
       async authorize(credentials) {
         await connectDB();
-
         const user = await User.findOne({ email: credentials.email });
-        if (!user) throw new Error("User not found");
-
+        if (!user) return null;
         const isValid = await user.comparePassword(credentials.password);
-        if (!isValid) throw new Error("Invalid password");
+        if (!isValid) return null;
 
         return {
-          id: user._id,
+          id: user._id.toString(),
           email: user.email,
           name: user.name,
           role: user.role,
@@ -30,6 +28,7 @@ export const authOptions = {
       },
     }),
   ],
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -38,14 +37,12 @@ export const authOptions = {
       }
       return token;
     },
+
     async session({ session, token }) {
-      if (session?.user) {
-        session.active = true;
-      }
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-      }
+      if (!session.user) session.user = {};
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.active = true;
       return session;
     },
   },
@@ -55,6 +52,7 @@ export const authOptions = {
       console.log("User signed out", message);
     },
   },
+
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
 };

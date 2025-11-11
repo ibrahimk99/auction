@@ -2,23 +2,22 @@
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
-import { useDispatch } from "react-redux";
 import { safeFetch } from "../utils/safeFetch";
+import Loading from "./Loading";
 
 export default function ListofBidder({ bidPrice }) {
   const [bids, setBids] = useState([]);
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const { auctionId } = params;
-  const dispatch = useDispatch();
 
   const fetchBids = useCallback(
     async (signal) => {
       const data = await safeFetch(
         `/api/biding/${auctionId}`,
-        dispatch,
+        null,
         {},
-        Date.now(),
+        null,
         signal
       );
       if (data) {
@@ -26,7 +25,7 @@ export default function ListofBidder({ bidPrice }) {
         setLoading(false);
       }
     },
-    [auctionId, dispatch]
+    [auctionId]
   );
 
   useEffect(() => {
@@ -36,16 +35,7 @@ export default function ListofBidder({ bidPrice }) {
     return () => controller.abort();
   }, [bidPrice, auctionId, fetchBids]);
 
-  if (loading) {
-    return (
-      <div className="container text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3 text-muted">Fetching all bids...</p>
-      </div>
-    );
-  }
+  if (loading) return <Loading />;
   if (!bids.length) {
     return (
       <div className="container text-center mt-5">

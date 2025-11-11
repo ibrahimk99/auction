@@ -21,32 +21,41 @@ const UserSignup = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, role }),
       });
-      if (response.ok) {
-        const result = await signIn("credentials", {
-          redirect: false,
-          email,
-          password,
-        });
+      if (!response.ok) {
+        const data = await response.json();
+        dispatch(
+          showToast({
+            id: "signup-error",
+            message: data.message || "Signup failed",
+            type: "warning",
+          })
+        );
+        return;
+      }
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-        if (!result?.error) {
-          router.push("/user-auth");
-          dispatch(
-            showToast({
-              id: "login failed",
-              message: "Login Failed",
-              type: "warning",
-            })
-          );
-        } else {
-          router.push("/home");
-          dispatch(
-            showToast({
-              id: "login",
-              message: "Login Successfuly",
-              type: "success",
-            })
-          );
-        }
+      if (!result?.error) {
+        dispatch(
+          showToast({
+            id: "login",
+            message: "Login Successfully",
+            type: "success",
+          })
+        );
+        router.push("/home");
+      } else {
+        dispatch(
+          showToast({
+            id: "login-failed",
+            message: "Login Failed",
+            type: "warning",
+          })
+        );
+        router.push("/user-auth");
       }
     } catch (error) {
       dispatch(

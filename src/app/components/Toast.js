@@ -18,7 +18,10 @@ export default function Toast() {
       else if (t.type === "warning") toast.warning(t.message);
       else toast(t.message);
       shownToasts.current.add(t.id);
-      setTimeout(() => dispatch(hideToast(t.id)), 3000);
+      setTimeout(() => {
+        dispatch(hideToast(t.id));
+        shownToasts.current.delete(t.id);
+      }, 3000);
     });
   }, [toasts, dispatch]);
 

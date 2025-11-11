@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 import WatchList from "@/app/components/WatchList";
 import Clock from "@/app/components/Clock";
 import { useAuctionTimer } from "@/app/utils/useAuctionTimer";
+import Loading from "@/app/components/Loading";
 
 const ListofBidder = dynamic(() => import("@/app/components/ListofBidder"), {
   ssr: false,
@@ -41,9 +42,9 @@ const GetAuction = () => {
     async (signal) => {
       const data = await safeFetch(
         `/api/auction/${auctionId}`,
-        dispatch,
+        null,
         {},
-        "auction-fetched",
+        null,
         signal
       );
       if (data) {
@@ -51,7 +52,7 @@ const GetAuction = () => {
         setLoading(false);
       }
     },
-    [auctionId, dispatch]
+    [auctionId]
   );
 
   useEffect(() => {
@@ -61,9 +62,7 @@ const GetAuction = () => {
     return () => controller.abort();
   }, [auctionId, fetchAuction]);
 
-  if (loading) {
-    return <h1 className="text-center mt-5">Loading...</h1>;
-  }
+  if (loading) return <Loading />;
   const {
     title,
     description,
@@ -96,7 +95,7 @@ const GetAuction = () => {
     const bidAmount = Number(bidPrice);
     const bidRes = await safeFetch(
       `/api/biding`,
-      dispatch,
+      null,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,7 +105,7 @@ const GetAuction = () => {
           amount: bidAmount,
         }),
       },
-      Date.now(),
+      null,
       null
     );
 
